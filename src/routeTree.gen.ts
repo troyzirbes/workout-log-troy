@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExercisesRouteImport } from './routes/exercises'
+import { Route as WorkoutsWorkoutIdRouteImport } from './routes/workouts.$workoutId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const ExercisesRoute = ExercisesRouteImport.update({
   path: '/exercises',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkoutsWorkoutIdRoute = WorkoutsWorkoutIdRouteImport.update({
+  id: '/workouts/$workoutId',
+  path: '/workouts/$workoutId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/exercises': typeof ExercisesRoute
+  '/workouts/$workoutId': typeof WorkoutsWorkoutIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/exercises': typeof ExercisesRoute
+  '/workouts/$workoutId': typeof WorkoutsWorkoutIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/exercises': typeof ExercisesRoute
+  '/workouts/$workoutId': typeof WorkoutsWorkoutIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/exercises'
+  fullPaths: '/' | '/exercises' | '/workouts/$workoutId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/exercises'
-  id: '__root__' | '/' | '/exercises'
+  to: '/' | '/exercises' | '/workouts/$workoutId'
+  id: '__root__' | '/' | '/exercises' | '/workouts/$workoutId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ExercisesRoute: typeof ExercisesRoute
+  WorkoutsWorkoutIdRoute: typeof WorkoutsWorkoutIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExercisesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workouts/$workoutId': {
+      id: '/workouts/$workoutId'
+      path: '/workouts/$workoutId'
+      fullPath: '/workouts/$workoutId'
+      preLoaderRoute: typeof WorkoutsWorkoutIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ExercisesRoute: ExercisesRoute,
+  WorkoutsWorkoutIdRoute: WorkoutsWorkoutIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -90,9 +90,10 @@ function WorkoutDetail() {
     }) => {
       const { error } = await supabase
         .from("exercise_sets")
-        .update({ [field]: value })
+        .update(field === "reps" ? { reps: value } : { weight: value })
         .eq("id", id);
       if (error) throw error;
+
     },
     onSuccess: invalidate,
   });
