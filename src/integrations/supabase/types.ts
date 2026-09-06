@@ -82,6 +82,7 @@ export type Database = {
           exercise_id: string
           id: string
           position: number
+          success: boolean
           workout_id: string
         }
         Insert: {
@@ -89,6 +90,7 @@ export type Database = {
           exercise_id: string
           id?: string
           position?: number
+          success?: boolean
           workout_id: string
         }
         Update: {
@@ -96,6 +98,7 @@ export type Database = {
           exercise_id?: string
           id?: string
           position?: number
+          success?: boolean
           workout_id?: string
         }
         Relationships: [
@@ -121,6 +124,7 @@ export type Database = {
           date: string
           id: string
           notes: string | null
+          success: boolean
           title: string
         }
         Insert: {
@@ -128,6 +132,7 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          success?: boolean
           title?: string
         }
         Update: {
@@ -135,6 +140,7 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          success?: boolean
           title?: string
         }
         Relationships: []
