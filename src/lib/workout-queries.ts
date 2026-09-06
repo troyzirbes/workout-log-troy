@@ -110,6 +110,45 @@ export const workoutDetailQuery = (id: string) => ({
         (a, b) => a.set_number - b.set_number,
       ),
     }));
-    return { workout: workout as Workout | null, entries: list };
+    const w = workout as Workout | null;
+    const lastByExercise = new Map<string, LastPerformance>();
+
+    if (w && list.length > 0) {
+      const { data: history, error: hErr } = await supabase
+        .from("workout_exercises")
+        .select("exercise_id, workout_id, exercise_sets(*), workouts!inner(date)")
+        .in(
+          "exercise_id",
+          list.map((e) => e.exercise_id),
+        )
+        .neq("workout_id", id)
+        .lte("workouts.date", w.date);
+      if (hErr) throw hErr;
+
+      type Row = {
+        exercise_id: string;
+        exercise_sets: ExerciseSet[];
+        workouts: { date: string };
+      };
+      for (const row of (history ?? []) as unknown as Row[]) {
+        const sets = [...(row.exercise_sets ?? [])].sort(
+          (a, b) => a.set_number - b.set_number,
+        );
+        if (sets.length === 0) continue;
+        const existing = lastByExercise.get(row.exercise_id);
+        if (!existing || existing.date < row.workouts.date) {
+          lastByExercise.set(row.exercise_id, {
+            date: row.workouts.date,
+            sets: sets.map((s) => ({
+              set_number: s.set_number,
+              reps: s.reps,
+              weight: s.weight,
+            })),
+          });
+        }
+      }
+    }
+
+    return { workout: w, entries: list, lastByExercise };
   },
 });
