@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ImagePlus, Plus, Trash2 } from "lucide-react";
+import { ImagePlus, Plus, Trash2, TrendingUp } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
+import { ExerciseProgress } from "@/components/ExerciseProgress";
 import { GifPicker } from "@/components/GifPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { exercisesQuery, groupExercisesByMuscleGroup } from "@/lib/workout-queries";
@@ -46,6 +47,10 @@ function ExercisesPage() {
   const [gifUrl, setGifUrl] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerTarget, setPickerTarget] = useState<string | null>(null);
+  const [progressTarget, setProgressTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const create = useMutation({
     mutationFn: async () => {
@@ -189,6 +194,16 @@ function ExercisesPage() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="View progress charts"
+                        onClick={() =>
+                          setProgressTarget({ id: ex.id, name: ex.name })
+                        }
+                      >
+                        <TrendingUp className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         aria-label="Pick demo GIF"
                         onClick={() => {
                           setPickerTarget(ex.id);
@@ -221,6 +236,15 @@ function ExercisesPage() {
         onSelect={(url) => {
           if (pickerTarget) setGif.mutate({ id: pickerTarget, url });
           else setGifUrl(url);
+        }}
+      />
+
+      <ExerciseProgress
+        exerciseId={progressTarget?.id ?? null}
+        exerciseName={progressTarget?.name ?? ""}
+        open={progressTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setProgressTarget(null);
         }}
       />
     </AppShell>

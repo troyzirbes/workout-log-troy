@@ -152,3 +152,45 @@ export const workoutDetailQuery = (id: string) => ({
     return { workout: w, entries: list, lastByExercise };
   },
 });
+
+export type ExerciseHistoryPoint = {
+  date: string;
+  workoutTitle: string;
+  sets: number;
+  totalReps: number;
+  topWeight: number;
+  volume: number;
+};
+
+export const exerciseHistoryQuery = (exerciseId: string) => ({
+  queryKey: ["exercise-history", exerciseId],
+  queryFn: async (): Promise<ExerciseHistoryPoint[]> => {
+    const { data, error } = await supabase
+      .from("workout_exercises")
+      .select("exercise_sets(*), workouts!inner(date, title)")
+      .eq("exercise_id", exerciseId);
+    if (error) throw error;
+
+    type Row = {
+      exercise_sets: ExerciseSet[];
+      workouts: { date: string; title: string };
+    };
+    const points: ExerciseHistoryPoint[] = [];
+    for (const row of (data ?? []) as unknown as Row[]) {
+      const sets = row.exercise_sets ?? [];
+      if (sets.length === 0) continue;
+      const totalReps = sets.reduce((sum, s) => sum + s.reps, 0);
+      const topWeight = Math.max(...sets.map((s) => s.weight));
+      const volume = sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
+      points.push({
+        date: row.workouts.date,
+        workoutTitle: row.workouts.title,
+        sets: sets.length,
+        totalReps,
+        topWeight,
+        volume,
+      });
+    }
+    return points.sort((a, b) => a.date.localeCompare(b.date));
+  },
+});
