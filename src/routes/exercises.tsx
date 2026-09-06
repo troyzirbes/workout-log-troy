@@ -6,8 +6,7 @@ import { ImagePlus, Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { GifPicker } from "@/components/GifPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { exercisesQuery, type Exercise } from "@/lib/workout-queries";
-import { Button } from "@/components/ui/button";
+import { exercisesQuery, groupExercisesByMuscleGroup } from "@/lib/workout-queries";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
