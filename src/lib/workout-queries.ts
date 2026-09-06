@@ -48,6 +48,7 @@ export type WorkoutExercise = {
   workout_id: string;
   exercise_id: string;
   position: number;
+  success: boolean;
   exercises: Exercise;
   exercise_sets: ExerciseSet[];
 };
@@ -57,6 +58,12 @@ export type Workout = {
   date: string;
   title: string;
   notes: string | null;
+  success: boolean;
+};
+
+export type LastPerformance = {
+  date: string;
+  sets: { set_number: number; reps: number; weight: number }[];
 };
 
 export const exercisesQuery = {
