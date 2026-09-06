@@ -153,13 +153,18 @@ function WorkoutDetail() {
             <SelectValue placeholder="Add an exercise…" />
           </SelectTrigger>
           <SelectContent>
-            {exercises
-              .filter((e) => !used.has(e.id))
-              .map((e) => (
-                <SelectItem key={e.id} value={e.id}>
-                  {e.name}
-                </SelectItem>
-              ))}
+            {groupExercisesByMuscleGroup(
+              exercises.filter((e) => !used.has(e.id)),
+            ).map(([group, items]) => (
+              <SelectGroup key={group}>
+                <SelectLabel>{group}</SelectLabel>
+                {items.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))}
           </SelectContent>
         </Select>
         <Button disabled={!picked} onClick={() => addExercise.mutate(picked)}>
