@@ -6,7 +6,7 @@ import { ImagePlus, Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { GifPicker } from "@/components/GifPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { exercisesQuery } from "@/lib/workout-queries";
+import { exercisesQuery, type Exercise } from "@/lib/workout-queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,33 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
+const GROUP_ORDER = [
+  "Chest",
+  "Back & Posterior Neck",
+  "Arms (Biceps & Triceps)",
+  "Shoulders & Lateral Neck",
+  "Quads & Calves",
+  "Glutes & Hamstrings",
+];
+
+function groupExercises(exercises: Exercise[]) {
+  const groups = new Map<string, Exercise[]>();
+  for (const ex of exercises) {
+    const group = ex.muscle_group ?? "Other";
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group)!.push(ex);
+  }
+  for (const list of groups.values()) {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return [...groups.entries()].sort(([a], [b]) => {
+    const ia = GROUP_ORDER.indexOf(a);
+    const ib = GROUP_ORDER.indexOf(b);
+    if (ia !== -1 || ib !== -1) return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    return a.localeCompare(b);
+  });
+}
 
 export const Route = createFileRoute("/exercises")({
   head: () => ({
