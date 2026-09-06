@@ -11,7 +11,7 @@ export type Exercise = {
 export const MUSCLE_GROUP_ORDER = [
   "Chest",
   "Back & Posterior Neck",
-  "Arms (Biceps & Triceps)",
+  "Arms",
   "Shoulders & Lateral Neck",
   "Quads & Calves",
   "Glutes & Hamstrings",
