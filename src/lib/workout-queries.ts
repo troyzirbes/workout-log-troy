@@ -8,6 +8,33 @@ export type Exercise = {
   notes: string | null;
 };
 
+export const MUSCLE_GROUP_ORDER = [
+  "Chest",
+  "Back & Posterior Neck",
+  "Arms (Biceps & Triceps)",
+  "Shoulders & Lateral Neck",
+  "Quads & Calves",
+  "Glutes & Hamstrings",
+];
+
+export function groupExercisesByMuscleGroup(exercises: Exercise[]) {
+  const groups = new Map<string, Exercise[]>();
+  for (const ex of exercises) {
+    const group = ex.muscle_group ?? "Other";
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group)!.push(ex);
+  }
+  for (const list of groups.values()) {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return [...groups.entries()].sort(([a], [b]) => {
+    const ia = MUSCLE_GROUP_ORDER.indexOf(a);
+    const ib = MUSCLE_GROUP_ORDER.indexOf(b);
+    if (ia !== -1 || ib !== -1) return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    return a.localeCompare(b);
+  });
+}
+
 export type ExerciseSet = {
   id: string;
   workout_exercise_id: string;

@@ -6,7 +6,7 @@ import { ImagePlus, Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { GifPicker } from "@/components/GifPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { exercisesQuery } from "@/lib/workout-queries";
+import { exercisesQuery, groupExercisesByMuscleGroup } from "@/lib/workout-queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -160,54 +160,58 @@ function ExercisesPage() {
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {exercises.map((ex) => (
-          <article
-            key={ex.id}
-            className="surface-soft overflow-hidden rounded-2xl border border-border"
-          >
-            {ex.gif_url ? (
-              <img
-                src={ex.gif_url}
-                alt={`${ex.name} demonstration`}
-                loading="lazy"
-                className="h-40 w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-40 items-center justify-center bg-muted text-sm text-muted-foreground">
-                No demo yet
-              </div>
-            )}
-            <div className="flex items-start justify-between gap-3 p-4">
-              <div className="min-w-0">
-                <h2 className="truncate font-display text-lg font-semibold">{ex.name}</h2>
-                {ex.muscle_group && (
-                  <p className="text-sm text-muted-foreground">{ex.muscle_group}</p>
-                )}
-              </div>
-              <div className="flex shrink-0 gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Pick demo GIF"
-                  onClick={() => {
-                    setPickerTarget(ex.id);
-                    setPickerOpen(true);
-                  }}
+      <div className="space-y-8">
+        {groupExercisesByMuscleGroup(exercises).map(([group, items]) => (
+          <section key={group}>
+            <h2 className="mb-4 font-display text-xl font-semibold text-primary">{group}</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {items.map((ex) => (
+                <article
+                  key={ex.id}
+                  className="surface-soft overflow-hidden rounded-2xl border border-border"
                 >
-                  <ImagePlus className="size-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Delete exercise"
-                  onClick={() => remove.mutate(ex.id)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
+                  {ex.gif_url ? (
+                    <img
+                      src={ex.gif_url}
+                      alt={`${ex.name} demonstration`}
+                      loading="lazy"
+                      className="h-40 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-40 items-center justify-center bg-muted text-sm text-muted-foreground">
+                      No demo yet
+                    </div>
+                  )}
+                  <div className="flex items-start justify-between gap-3 p-4">
+                    <div className="min-w-0">
+                      <h3 className="truncate font-display text-lg font-semibold">{ex.name}</h3>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Pick demo GIF"
+                        onClick={() => {
+                          setPickerTarget(ex.id);
+                          setPickerOpen(true);
+                        }}
+                      >
+                        <ImagePlus className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Delete exercise"
+                        onClick={() => remove.mutate(ex.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
-          </article>
+          </section>
         ))}
       </div>
 

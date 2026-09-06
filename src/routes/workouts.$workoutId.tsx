@@ -5,14 +5,20 @@ import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
-import { exercisesQuery, workoutDetailQuery } from "@/lib/workout-queries";
+import {
+  exercisesQuery,
+  groupExercisesByMuscleGroup,
+  workoutDetailQuery,
+} from "@/lib/workout-queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -147,13 +153,18 @@ function WorkoutDetail() {
             <SelectValue placeholder="Add an exercise…" />
           </SelectTrigger>
           <SelectContent>
-            {exercises
-              .filter((e) => !used.has(e.id))
-              .map((e) => (
-                <SelectItem key={e.id} value={e.id}>
-                  {e.name}
-                </SelectItem>
-              ))}
+            {groupExercisesByMuscleGroup(
+              exercises.filter((e) => !used.has(e.id)),
+            ).map(([group, items]) => (
+              <SelectGroup key={group}>
+                <SelectLabel>{group}</SelectLabel>
+                {items.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))}
           </SelectContent>
         </Select>
         <Button disabled={!picked} onClick={() => addExercise.mutate(picked)}>
