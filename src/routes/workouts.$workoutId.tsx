@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, CheckCircle2, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,10 +9,21 @@ import {
   exercisesQuery,
   groupExercisesByMuscleGroup,
   workoutDetailQuery,
+  type LastPerformance,
 } from "@/lib/workout-queries";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -41,6 +52,30 @@ export const Route = createFileRoute("/workouts/$workoutId")({
   component: WorkoutDetail,
 });
 
+function formatDate(value: string) {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function LastTime({ last }: { last?: LastPerformance }) {
+  if (!last) {
+    return (
+      <p className="mt-1 text-xs text-muted-foreground">First time logging this one.</p>
+    );
+  }
+  return (
+    <p className="mt-1 text-xs text-muted-foreground">
+      Last time ({formatDate(last.date)}):{" "}
+      {last.sets.map((s) => `${s.reps}×${s.weight}`).join(" · ")}
+    </p>
+  );
+}
+
 function WorkoutDetail() {
   const { workoutId } = Route.useParams();
   const qc = useQueryClient();
@@ -48,8 +83,65 @@ function WorkoutDetail() {
   const { data, isLoading } = useQuery(detail);
   const { data: exercises = [] } = useQuery(exercisesQuery);
   const [picked, setPicked] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [notes, setNotes] = useState("");
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: detail.queryKey });
+  const workout = data?.workout;
+
+  useEffect(() => {
+    if (workout) {
+      setTitle(workout.title);
+      setDate(workout.date);
+      setNotes(workout.notes ?? "");
+    }
+  }, [workout?.id, workout?.title, workout?.date, workout?.notes]);
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: detail.queryKey });
+    qc.invalidateQueries({ queryKey: ["workouts"] });
+  };
+
+  const saveWorkout = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("workouts")
+        .update({
+          title: title.trim() || "Workout",
+          date,
+          notes: notes.trim() || null,
+        })
+        .eq("id", workoutId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setEditOpen(false);
+      invalidate();
+    },
+  });
+
+  const toggleWorkoutSuccess = useMutation({
+    mutationFn: async (value: boolean) => {
+      const { error } = await supabase
+        .from("workouts")
+        .update({ success: value })
+        .eq("id", workoutId);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
+
+  const toggleEntrySuccess = useMutation({
+    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
+      const { error } = await supabase
+        .from("workout_exercises")
+        .update({ success: value })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+  });
 
   const addExercise = useMutation({
     mutationFn: async (exerciseId: string) => {
@@ -99,7 +191,6 @@ function WorkoutDetail() {
         .update(field === "reps" ? { reps: value } : { weight: value })
         .eq("id", id);
       if (error) throw error;
-
     },
     onSuccess: invalidate,
   });
@@ -120,7 +211,7 @@ function WorkoutDetail() {
     );
   }
 
-  if (!data?.workout) {
+  if (!workout) {
     return (
       <AppShell>
         <h1 className="text-2xl font-semibold">Workout not found</h1>
@@ -131,7 +222,8 @@ function WorkoutDetail() {
     );
   }
 
-  const { workout, entries } = data;
+  const entries = data.entries;
+  const lastByExercise = data.lastByExercise;
   const used = new Set(entries.map((e) => e.exercise_id));
 
   return (
@@ -143,9 +235,82 @@ function WorkoutDetail() {
         <ArrowLeft className="size-4" /> All workouts
       </Link>
 
-      <h1 className="text-3xl font-semibold">{workout.title}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{workout.date}</p>
-      {workout.notes && <p className="mt-3 text-sm">{workout.notes}</p>}
+      <header
+        className={cn(
+          "rounded-2xl border border-border p-5 transition-colors",
+          workout.success
+            ? "border-success bg-success-soft"
+            : "surface-soft",
+        )}
+      >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-semibold">{workout.title}</h1>
+              {workout.success && <CheckCircle2 className="size-6 text-success" />}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {formatDate(workout.date)}
+            </p>
+            {workout.notes && <p className="mt-3 text-sm">{workout.notes}</p>}
+          </div>
+
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogTrigger asChild>
+              <Button variant="secondary" size="sm">
+                <Pencil className="size-4" /> Edit
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit workout</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-date">Date</Label>
+                  <Input
+                    id="edit-date"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title">Name</Label>
+                  <Input
+                    id="edit-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-notes">Notes</Label>
+                  <Textarea
+                    id="edit-notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </div>
+                <Button
+                  className="w-full"
+                  onClick={() => saveWorkout.mutate()}
+                  disabled={saveWorkout.isPending}
+                >
+                  Save changes
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <label className="mt-4 flex w-fit cursor-pointer items-center gap-2 text-sm font-medium">
+          <Checkbox
+            checked={workout.success}
+            onCheckedChange={(v) => toggleWorkoutSuccess.mutate(v === true)}
+          />
+          Mark this workout a success
+        </label>
+      </header>
 
       <div className="mt-8 flex flex-wrap items-center gap-2">
         <Select value={picked} onValueChange={setPicked}>
@@ -188,7 +353,12 @@ function WorkoutDetail() {
         {entries.map((entry) => (
           <section
             key={entry.id}
-            className="surface-soft overflow-hidden rounded-2xl border border-border"
+            className={cn(
+              "overflow-hidden rounded-2xl border transition-colors",
+              entry.success
+                ? "border-success bg-success-soft"
+                : "surface-soft border-border",
+            )}
           >
             <div className="flex gap-4 p-4">
               {entry.exercises.gif_url ? (
@@ -206,14 +376,20 @@ function WorkoutDetail() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h2 className="font-display text-lg font-semibold">
-                      {entry.exercises.name}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-display text-lg font-semibold">
+                        {entry.exercises.name}
+                      </h2>
+                      {entry.success && (
+                        <CheckCircle2 className="size-5 text-success" />
+                      )}
+                    </div>
                     {entry.exercises.muscle_group && (
                       <p className="text-sm text-muted-foreground">
                         {entry.exercises.muscle_group}
                       </p>
                     )}
+                    <LastTime last={lastByExercise.get(entry.exercise_id)} />
                   </div>
                   <Button
                     variant="ghost"
@@ -277,18 +453,32 @@ function WorkoutDetail() {
                       </Button>
                     </div>
                   ))}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() =>
-                      addSet.mutate({
-                        id: entry.id,
-                        next: entry.exercise_sets.length + 1,
-                      })
-                    }
-                  >
-                    <Plus className="size-4" /> Add set
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() =>
+                        addSet.mutate({
+                          id: entry.id,
+                          next: entry.exercise_sets.length + 1,
+                        })
+                      }
+                    >
+                      <Plus className="size-4" /> Add set
+                    </Button>
+                    <label className="flex cursor-pointer items-center gap-2 text-sm">
+                      <Checkbox
+                        checked={entry.success}
+                        onCheckedChange={(v) =>
+                          toggleEntrySuccess.mutate({
+                            id: entry.id,
+                            value: v === true,
+                          })
+                        }
+                      />
+                      Success
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
