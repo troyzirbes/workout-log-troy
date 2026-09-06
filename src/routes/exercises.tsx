@@ -161,7 +161,7 @@ function ExercisesPage() {
       {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
 
       <div className="space-y-8">
-        {groupExercises(exercises).map(([group, items]) => (
+        {groupExercisesByMuscleGroup(exercises).map(([group, items]) => (
           <section key={group}>
             <h2 className="mb-4 font-display text-xl font-semibold text-primary">{group}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
