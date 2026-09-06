@@ -143,7 +143,7 @@ function ExercisesPage() {
                   }}
                 >
                   <ImagePlus className="size-4" />
-                  {gifUrl ? "Change GIF" : "Search for a GIF"}
+                  {gifUrl ? "Change GIF" : "Add a GIF link"}
                 </Button>
               </div>
               <Button
@@ -219,7 +219,6 @@ function ExercisesPage() {
         key={`${pickerTarget ?? "new"}-${pickerOpen}`}
         open={pickerOpen}
         onOpenChange={setPickerOpen}
-        initialQuery={pickerTarget ? (target?.name ?? "") : name}
         onSelect={(url) => {
           if (pickerTarget) setGif.mutate({ id: pickerTarget, url });
           else setGifUrl(url);
