@@ -84,7 +84,6 @@ function ExercisesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["exercises"] }),
   });
 
-  const target = exercises.find((e) => e.id === pickerTarget);
 
   return (
     <AppShell>
