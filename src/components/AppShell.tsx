@@ -1,7 +1,27 @@
-import { Link } from "@tanstack/react-router";
-import { Dumbbell } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Dumbbell, LogOut } from "lucide-react";
+
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !session) navigate({ to: "/auth" });
+  }, [loading, session, navigate]);
+
+  if (loading || !session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <header className="border-b border-border bg-gradient-soft">
@@ -28,6 +48,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               Exercises
             </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Sign out"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate({ to: "/auth" });
+              }}
+            >
+              <LogOut className="size-4" />
+            </Button>
           </nav>
         </div>
       </header>
