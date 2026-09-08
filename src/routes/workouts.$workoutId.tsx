@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Pencil, Plus, Timer, Trash2 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +73,102 @@ function LastTime({ last }: { last?: LastPerformance }) {
       Last time ({formatDate(last.date)}):{" "}
       {last.sets.map((s) => `${s.reps}×${s.weight}`).join(" · ")}
     </p>
+  );
+}
+
+const REST_SECONDS = 90;
+
+function formatTime(totalSeconds: number) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function RestTimer() {
+  const [secondsLeft, setSecondsLeft] = useState(REST_SECONDS);
+  const [running, setRunning] = useState(false);
+  const [finished, setFinished] = useState(false);
+
+  useEffect(() => {
+    if (!running) return;
+    if (secondsLeft <= 0) {
+      setRunning(false);
+      setFinished(true);
+      return;
+    }
+    const id = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(id);
+          setRunning(false);
+          setFinished(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [running, secondsLeft]);
+
+  const start = () => {
+    setFinished(false);
+    setRunning(true);
+  };
+  const pause = () => setRunning(false);
+  const reset = () => {
+    setRunning(false);
+    setFinished(false);
+    setSecondsLeft(REST_SECONDS);
+  };
+
+  return (
+    <div
+      className={cn(
+        "mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-4 transition-colors",
+        finished
+          ? "border-success bg-success-soft"
+          : "surface-soft border-border",
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+          <Timer className="size-5" />
+        </div>
+        <div>
+          <p className="text-sm font-medium">Rest timer</p>
+          <p className="text-xs text-muted-foreground">90 seconds between sets</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <span
+          className={cn(
+            "min-w-[4.5rem] text-center font-display text-3xl font-semibold tabular-nums",
+            finished ? "text-success" : "text-foreground",
+          )}
+        >
+          {formatTime(secondsLeft)}
+        </span>
+        <div className="flex items-center gap-2">
+          {!running ? (
+            <Button size="sm" onClick={start}>
+              Start
+            </Button>
+          ) : (
+            <Button size="sm" variant="secondary" onClick={pause}>
+              Pause
+            </Button>
+          )}
+          <Button size="sm" variant="outline" onClick={reset}>
+            Reset
+          </Button>
+        </div>
+      </div>
+
+      {finished && (
+        <p className="w-full text-sm font-medium text-success">Time's up — ready for the next set.</p>
+      )}
+    </div>
   );
 }
 
@@ -234,6 +330,8 @@ function WorkoutDetail() {
       >
         <ArrowLeft className="size-4" /> All workouts
       </Link>
+
+      <RestTimer />
 
       <header
         className={cn(
