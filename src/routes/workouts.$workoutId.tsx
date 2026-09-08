@@ -331,6 +331,8 @@ function WorkoutDetail() {
         <ArrowLeft className="size-4" /> All workouts
       </Link>
 
+      <RestTimer />
+
       <header
         className={cn(
           "rounded-2xl border border-border p-5 transition-colors",
