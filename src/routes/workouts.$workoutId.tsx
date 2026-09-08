@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, Pencil, Plus, Timer, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Timer, Trash2, TrendingUp } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -217,17 +217,6 @@ function WorkoutDetail() {
     },
   });
 
-  const toggleWorkoutSuccess = useMutation({
-    mutationFn: async (value: boolean) => {
-      const { error } = await supabase
-        .from("workouts")
-        .update({ success: value })
-        .eq("id", workoutId);
-      if (error) throw error;
-    },
-    onSuccess: invalidate,
-  });
-
   const toggleEntrySuccess = useMutation({
     mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
       const { error } = await supabase
@@ -333,20 +322,10 @@ function WorkoutDetail() {
 
       <RestTimer />
 
-      <header
-        className={cn(
-          "rounded-2xl border border-border p-5 transition-colors",
-          workout.success
-            ? "border-success bg-success-soft"
-            : "surface-soft",
-        )}
-      >
+      <header className="surface-soft rounded-2xl border border-border p-5 transition-colors">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-semibold">{workout.title}</h1>
-              {workout.success && <CheckCircle2 className="size-6 text-success" />}
-            </div>
+            <h1 className="text-3xl font-semibold">{workout.title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {formatDate(workout.date)}
             </p>
@@ -400,14 +379,6 @@ function WorkoutDetail() {
             </DialogContent>
           </Dialog>
         </div>
-
-        <label className="mt-4 flex w-fit cursor-pointer items-center gap-2 text-sm font-medium">
-          <Checkbox
-            checked={workout.success}
-            onCheckedChange={(v) => toggleWorkoutSuccess.mutate(v === true)}
-          />
-          Mark this workout a success
-        </label>
       </header>
 
       <div className="mt-8 flex flex-wrap items-center gap-2">
@@ -479,7 +450,7 @@ function WorkoutDetail() {
                         {entry.exercises.name}
                       </h2>
                       {entry.success && (
-                        <CheckCircle2 className="size-5 text-success" />
+                        <TrendingUp className="size-5 text-success" />
                       )}
                     </div>
                     {entry.exercises.muscle_group && (
@@ -574,7 +545,7 @@ function WorkoutDetail() {
                           })
                         }
                       />
-                      Success
+                      Increase weights next time
                     </label>
                   </div>
                 </div>

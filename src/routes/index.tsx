@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { CalendarDays, CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { CalendarDays, Plus, Trash2 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -157,24 +157,10 @@ function WorkoutsPage() {
         {workouts.map((w) => (
           <li
             key={w.id}
-            className={
-              w.success
-                ? "group flex items-center gap-4 rounded-2xl border border-success bg-success-soft p-4"
-                : "surface-soft group flex items-center gap-4 rounded-2xl border border-border p-4"
-            }
+            className="surface-soft group flex items-center gap-4 rounded-2xl border border-border p-4"
           >
-            <span
-              className={
-                w.success
-                  ? "flex size-11 shrink-0 items-center justify-center rounded-xl bg-success text-success-foreground"
-                  : "flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground"
-              }
-            >
-              {w.success ? (
-                <CheckCircle2 className="size-5" />
-              ) : (
-                <CalendarDays className="size-5" />
-              )}
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+              <CalendarDays className="size-5" />
             </span>
             <Link
               to="/workouts/$workoutId"
