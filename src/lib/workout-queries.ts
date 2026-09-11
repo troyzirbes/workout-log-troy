@@ -63,6 +63,7 @@ export type Workout = {
 
 export type LastPerformance = {
   date: string;
+  increaseWeights: boolean;
   sets: { set_number: number; reps: number; weight: number }[];
 };
 
@@ -116,7 +117,7 @@ export const workoutDetailQuery = (id: string) => ({
     if (w && list.length > 0) {
       const { data: history, error: hErr } = await supabase
         .from("workout_exercises")
-        .select("exercise_id, workout_id, exercise_sets(*), workouts!inner(date)")
+        .select("exercise_id, workout_id, success, exercise_sets(*), workouts!inner(date)")
         .in(
           "exercise_id",
           list.map((e) => e.exercise_id),
@@ -127,6 +128,7 @@ export const workoutDetailQuery = (id: string) => ({
 
       type Row = {
         exercise_id: string;
+        success: boolean;
         exercise_sets: ExerciseSet[];
         workouts: { date: string };
       };
@@ -139,6 +141,7 @@ export const workoutDetailQuery = (id: string) => ({
         if (!existing || existing.date < row.workouts.date) {
           lastByExercise.set(row.exercise_id, {
             date: row.workouts.date,
+            increaseWeights: row.success,
             sets: sets.map((s) => ({
               set_number: s.set_number,
               reps: s.reps,
