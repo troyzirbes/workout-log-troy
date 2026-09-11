@@ -200,3 +200,85 @@ export const exerciseHistoryQuery = (exerciseId: string) => ({
     return points.sort((a, b) => a.date.localeCompare(b.date));
   },
 });
+
+export type ExerciseMetricSeries = {
+  exerciseId: string;
+  exerciseName: string;
+  color: string;
+  data: { date: string; volume: number; topWeight: number; totalReps: number }[];
+};
+
+export type MuscleGroupMetrics = {
+  group: string;
+  series: ExerciseMetricSeries[];
+};
+
+export const metricsQuery = {
+  queryKey: ["metrics"],
+  queryFn: async (): Promise<MuscleGroupMetrics[]> => {
+    const [{ data: exercisesData, error: eErr }, { data: entries, error: wErr }] =
+      await Promise.all([
+        supabase.from("exercises").select("id, name, muscle_group").order("name"),
+        supabase
+          .from("workout_exercises")
+          .select("exercise_id, exercise_sets(*), workouts!inner(date)")
+          .order("workouts.date", { ascending: true }),
+      ]);
+    if (eErr) throw eErr;
+    if (wErr) throw wErr;
+
+    const exercises = (exercisesData ?? []) as Exercise[];
+    const byExercise = new Map<string, ExerciseMetricSeries["data"]>();
+
+    type Row = {
+      exercise_id: string;
+      exercise_sets: ExerciseSet[];
+      workouts: { date: string };
+    };
+    for (const row of (entries ?? []) as unknown as Row[]) {
+      const sets = row.exercise_sets ?? [];
+      if (sets.length === 0) continue;
+      const totalReps = sets.reduce((sum, s) => sum + s.reps, 0);
+      const topWeight = Math.max(...sets.map((s) => s.weight));
+      const volume = sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
+      const list = byExercise.get(row.exercise_id) ?? [];
+      list.push({ date: row.workouts.date, volume, topWeight, totalReps });
+      byExercise.set(row.exercise_id, list);
+    }
+
+    const palette = [
+      "#7C3AED",
+      "#DB2777",
+      "#059669",
+      "#D97706",
+      "#2563EB",
+      "#0891B2",
+      "#DC2626",
+      "#7C2D12",
+      "#4338CA",
+      "#BE185D",
+    ];
+
+    const groups = new Map<string, ExerciseMetricSeries[]>();
+    for (const ex of exercises) {
+      const data = byExercise.get(ex.id);
+      if (!data || data.length === 0) continue;
+      const group = ex.muscle_group ?? "Other";
+      if (!groups.has(group)) groups.set(group, []);
+      const series = groups.get(group)!;
+      series.push({
+        exerciseId: ex.id,
+        exerciseName: ex.name,
+        color: palette[series.length % palette.length],
+        data,
+      });
+    }
+
+    return [...groups.entries()].sort(([a], [b]) => {
+      const ia = MUSCLE_GROUP_ORDER.indexOf(a);
+      const ib = MUSCLE_GROUP_ORDER.indexOf(b);
+      if (ia !== -1 || ib !== -1) return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      return a.localeCompare(b);
+    }).map(([group, series]) => ({ group, series }));
+  },
+};
