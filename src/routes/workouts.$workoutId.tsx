@@ -445,7 +445,7 @@ function WorkoutDetail() {
             key={entry.id}
             className={cn(
               "overflow-hidden rounded-2xl border transition-colors",
-              entry.success
+              entry.weight_direction === "up"
                 ? "border-success bg-success-soft"
                 : "surface-soft border-border",
             )}
