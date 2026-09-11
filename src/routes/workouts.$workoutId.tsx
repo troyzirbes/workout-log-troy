@@ -3,6 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
   Pencil,
   Pause,
   Play,
@@ -10,7 +13,6 @@ import {
   RotateCcw,
   Timer,
   Trash2,
-  TrendingUp,
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
@@ -20,9 +22,9 @@ import {
   groupExercisesByMuscleGroup,
   workoutDetailQuery,
   type LastPerformance,
+  type WeightDirection,
 } from "@/lib/workout-queries";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export const Route = createFileRoute("/workouts/$workoutId")({
   head: () => ({
