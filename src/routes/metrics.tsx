@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 
+import { AppShell } from "@/components/AppShell";
 import { metricsQuery } from "@/lib/workout-queries";
 
 export const Route = createFileRoute("/metrics")({
