@@ -83,6 +83,7 @@ export type Database = {
           id: string
           position: number
           success: boolean
+          weight_direction: string
           workout_id: string
         }
         Insert: {
@@ -91,6 +92,7 @@ export type Database = {
           id?: string
           position?: number
           success?: boolean
+          weight_direction?: string
           workout_id: string
         }
         Update: {
@@ -99,6 +101,7 @@ export type Database = {
           id?: string
           position?: number
           success?: boolean
+          weight_direction?: string
           workout_id?: string
         }
         Relationships: [
