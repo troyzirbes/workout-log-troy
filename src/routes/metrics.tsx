@@ -41,7 +41,9 @@ function formatDate(iso: string) {
   return format(parseISO(iso), "MMM d, yyyy");
 }
 
-function buildChartData(series: { data: { date: string; volume: number }[] }[]) {
+function buildChartData(
+  series: { exerciseName: string; data: { date: string; volume: number }[] }[],
+) {
   const byDate = new Map<string, Record<string, number>>();
   for (const s of series) {
     for (const d of s.data) {
