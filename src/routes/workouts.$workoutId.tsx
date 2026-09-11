@@ -72,6 +72,11 @@ function LastTime({ last }: { last?: LastPerformance }) {
     <p className="mt-1 text-xs text-muted-foreground">
       Last time ({formatDate(last.date)}):{" "}
       {last.sets.map((s) => `${s.reps}×${s.weight}`).join(" · ")}
+      {last.increaseWeights && (
+        <span className="ml-2" aria-label="Increase weights last time">
+          ⬆️ 🏋️
+        </span>
+      )}
     </p>
   );
 }
