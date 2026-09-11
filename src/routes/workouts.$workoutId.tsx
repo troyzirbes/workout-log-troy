@@ -238,11 +238,11 @@ function WorkoutDetail() {
     },
   });
 
-  const toggleEntrySuccess = useMutation({
-    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
+  const setEntryDirection = useMutation({
+    mutationFn: async ({ id, direction }: { id: string; direction: WeightDirection }) => {
       const { error } = await supabase
         .from("workout_exercises")
-        .update({ success: value })
+        .update({ weight_direction: direction })
         .eq("id", id);
       if (error) throw error;
     },
