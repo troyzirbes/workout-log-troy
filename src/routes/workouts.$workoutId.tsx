@@ -562,18 +562,35 @@ function WorkoutDetail() {
                     >
                       <Plus className="size-4" /> Add set
                     </Button>
-                    <label className="flex cursor-pointer items-center gap-2 text-sm">
-                      <Checkbox
-                        checked={entry.success}
-                        onCheckedChange={(v) =>
-                          toggleEntrySuccess.mutate({
-                            id: entry.id,
-                            value: v === true,
-                          })
-                        }
-                      />
-                      Increase weights next time
-                    </label>
+                    <RadioGroup
+                      value={entry.weight_direction}
+                      onValueChange={(value) =>
+                        setEntryDirection.mutate({
+                          id: entry.id,
+                          direction: value as WeightDirection,
+                        })
+                      }
+                      className="flex flex-wrap items-center gap-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="up" id={`${entry.id}-up`} />
+                        <Label htmlFor={`${entry.id}-up`} className="cursor-pointer text-sm">
+                          ⬆️ Up
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="same" id={`${entry.id}-same`} />
+                        <Label htmlFor={`${entry.id}-same`} className="cursor-pointer text-sm">
+                          ➡️ Same
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="down" id={`${entry.id}-down`} />
+                        <Label htmlFor={`${entry.id}-down`} className="cursor-pointer text-sm">
+                          ⬇️ Down
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </div>
                 </div>
               </div>
