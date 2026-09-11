@@ -43,12 +43,15 @@ export type ExerciseSet = {
   weight: number;
 };
 
+export type WeightDirection = "up" | "same" | "down";
+
 export type WorkoutExercise = {
   id: string;
   workout_id: string;
   exercise_id: string;
   position: number;
   success: boolean;
+  weight_direction: WeightDirection;
   exercises: Exercise;
   exercise_sets: ExerciseSet[];
 };
@@ -63,7 +66,7 @@ export type Workout = {
 
 export type LastPerformance = {
   date: string;
-  increaseWeights: boolean;
+  weightDirection: WeightDirection;
   sets: { set_number: number; reps: number; weight: number }[];
 };
 
