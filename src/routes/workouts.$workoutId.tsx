@@ -3,6 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
   Pencil,
   Pause,
   Play,
@@ -10,7 +13,6 @@ import {
   RotateCcw,
   Timer,
   Trash2,
-  TrendingUp,
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
@@ -20,9 +22,9 @@ import {
   groupExercisesByMuscleGroup,
   workoutDetailQuery,
   type LastPerformance,
+  type WeightDirection,
 } from "@/lib/workout-queries";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export const Route = createFileRoute("/workouts/$workoutId")({
   head: () => ({
@@ -72,6 +75,12 @@ function formatDate(value: string) {
   });
 }
 
+const DIRECTION_EMOJI: Record<WeightDirection, string> = {
+  up: "⬆️",
+  same: "➡️",
+  down: "⬇️",
+};
+
 function LastTime({ last }: { last?: LastPerformance }) {
   if (!last) {
     return (
@@ -82,11 +91,9 @@ function LastTime({ last }: { last?: LastPerformance }) {
     <p className="mt-1 text-xs text-muted-foreground">
       Last time ({formatDate(last.date)}):{" "}
       {last.sets.map((s) => `${s.reps}×${s.weight}`).join(" · ")}
-      {last.increaseWeights && (
-        <span className="ml-2" aria-label="Increase weights last time">
-          ⬆️ 🏋️
-        </span>
-      )}
+      <span className="ml-2" aria-label={`Weight direction: ${last.weightDirection}`}>
+        {DIRECTION_EMOJI[last.weightDirection]} 🏋️
+      </span>
     </p>
   );
 }
@@ -231,11 +238,11 @@ function WorkoutDetail() {
     },
   });
 
-  const toggleEntrySuccess = useMutation({
-    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
+  const setEntryDirection = useMutation({
+    mutationFn: async ({ id, direction }: { id: string; direction: WeightDirection }) => {
       const { error } = await supabase
         .from("workout_exercises")
-        .update({ success: value })
+        .update({ weight_direction: direction })
         .eq("id", id);
       if (error) throw error;
     },
@@ -438,7 +445,7 @@ function WorkoutDetail() {
             key={entry.id}
             className={cn(
               "overflow-hidden rounded-2xl border transition-colors",
-              entry.success
+              entry.weight_direction === "up"
                 ? "border-success bg-success-soft"
                 : "surface-soft border-border",
             )}
@@ -463,8 +470,14 @@ function WorkoutDetail() {
                       <h2 className="font-display text-lg font-semibold">
                         {entry.exercises.name}
                       </h2>
-                      {entry.success && (
-                        <TrendingUp className="size-5 text-success" />
+                      {entry.weight_direction === "up" && (
+                        <ArrowUp className="size-5 text-success" aria-label="Increase weights next time" />
+                      )}
+                      {entry.weight_direction === "same" && (
+                        <ArrowRight className="size-5 text-muted-foreground" aria-label="Keep weights the same" />
+                      )}
+                      {entry.weight_direction === "down" && (
+                        <ArrowDown className="size-5 text-warning" aria-label="Decrease weights next time" />
                       )}
                     </div>
                     {entry.exercises.muscle_group && (
@@ -549,18 +562,35 @@ function WorkoutDetail() {
                     >
                       <Plus className="size-4" /> Add set
                     </Button>
-                    <label className="flex cursor-pointer items-center gap-2 text-sm">
-                      <Checkbox
-                        checked={entry.success}
-                        onCheckedChange={(v) =>
-                          toggleEntrySuccess.mutate({
-                            id: entry.id,
-                            value: v === true,
-                          })
-                        }
-                      />
-                      Increase weights next time
-                    </label>
+                    <RadioGroup
+                      value={entry.weight_direction}
+                      onValueChange={(value) =>
+                        setEntryDirection.mutate({
+                          id: entry.id,
+                          direction: value as WeightDirection,
+                        })
+                      }
+                      className="flex flex-wrap items-center gap-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="up" id={`${entry.id}-up`} />
+                        <Label htmlFor={`${entry.id}-up`} className="cursor-pointer text-sm">
+                          ⬆️ Up
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="same" id={`${entry.id}-same`} />
+                        <Label htmlFor={`${entry.id}-same`} className="cursor-pointer text-sm">
+                          ➡️ Same
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="down" id={`${entry.id}-down`} />
+                        <Label htmlFor={`${entry.id}-down`} className="cursor-pointer text-sm">
+                          ⬇️ Down
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </div>
                 </div>
               </div>
