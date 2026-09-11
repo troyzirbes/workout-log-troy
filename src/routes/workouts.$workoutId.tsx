@@ -1,7 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Pencil, Plus, Timer, Trash2, TrendingUp } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Pause,
+  Play,
+  Plus,
+  RotateCcw,
+  Timer,
+  Trash2,
+  TrendingUp,
+} from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,50 +139,49 @@ function RestTimer() {
   return (
     <div
       className={cn(
-        "mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-4 transition-colors",
+        "fixed top-20 right-4 z-50 flex max-w-[16rem] items-center gap-3 rounded-2xl border p-3 shadow-lg backdrop-blur transition-colors",
         finished
-          ? "border-success bg-success-soft"
-          : "surface-soft border-border",
+          ? "border-success bg-success-soft/95"
+          : "surface-soft border-border bg-background/95",
       )}
     >
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-          <Timer className="size-5" />
-        </div>
-        <div>
-          <p className="text-sm font-medium">Rest timer</p>
-          <p className="text-xs text-muted-foreground">90 seconds between sets</p>
-        </div>
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+        <Timer className="size-4" />
       </div>
 
-      <div className="flex items-center gap-3">
-        <span
-          className={cn(
-            "min-w-[4.5rem] text-center font-display text-3xl font-semibold tabular-nums",
-            finished ? "text-success" : "text-foreground",
-          )}
-        >
-          {formatTime(secondsLeft)}
-        </span>
-        <div className="flex items-center gap-2">
-          {!running ? (
-            <Button size="sm" onClick={start}>
-              Start
-            </Button>
-          ) : (
-            <Button size="sm" variant="secondary" onClick={pause}>
-              Pause
-            </Button>
-          )}
-          <Button size="sm" variant="outline" onClick={reset}>
-            Reset
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span
+            className={cn(
+              "font-display text-2xl font-semibold tabular-nums leading-none",
+              finished ? "text-success" : "text-foreground",
+            )}
+          >
+            {formatTime(secondsLeft)}
+          </span>
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            Rest
+          </span>
+        </div>
+        {finished && (
+          <p className="mt-1 text-xs font-medium text-success">Time's up — next set.</p>
+        )}
+      </div>
+
+      <div className="flex shrink-0 items-center gap-1">
+        {!running ? (
+          <Button size="icon" className="size-8" onClick={start} aria-label="Start timer">
+            <Play className="size-4" />
           </Button>
-        </div>
+        ) : (
+          <Button size="icon" className="size-8" variant="secondary" onClick={pause} aria-label="Pause timer">
+            <Pause className="size-4" />
+          </Button>
+        )}
+        <Button size="icon" className="size-8" variant="outline" onClick={reset} aria-label="Reset timer">
+          <RotateCcw className="size-4" />
+        </Button>
       </div>
-
-      {finished && (
-        <p className="w-full text-sm font-medium text-success">Time's up — ready for the next set.</p>
-      )}
     </div>
   );
 }
