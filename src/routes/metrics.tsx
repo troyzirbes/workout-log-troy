@@ -62,23 +62,24 @@ function MetricsPage() {
   const { data = [], isLoading } = useQuery(metricsQuery);
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-2xl font-semibold">Metrics</h1>
-        <p className="text-sm text-muted-foreground">
-          Volume (reps × weight) over time for every exercise, grouped by muscle group.
-        </p>
-      </div>
+    <AppShell>
+      <div className="space-y-8">
+        <div>
+          <h1 className="font-display text-2xl font-semibold">Metrics</h1>
+          <p className="text-sm text-muted-foreground">
+            Volume (reps × weight) over time for every exercise, grouped by muscle group.
+          </p>
+        </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Loading metrics…</p>}
+        {isLoading && <p className="text-sm text-muted-foreground">Loading metrics…</p>}
 
-      {!isLoading && data.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          No logged sets yet. Complete a workout and record sets to see group metrics here.
-        </p>
-      )}
+        {!isLoading && data.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            No logged sets yet. Complete a workout and record sets to see group metrics here.
+          </p>
+        )}
 
-      {data.map(({ group, series }) => {
+        {data.map(({ group, series }) => {
         const chartData = buildChartData(series);
         return (
           <section
