@@ -48,6 +48,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             >
               Exercises
             </Link>
+            <Link
+              to="/metrics"
+              activeProps={{ className: "bg-card/80 font-semibold" }}
+              className="rounded-lg px-3 py-1.5 transition-colors hover:bg-card/60"
+            >
+              Metrics
+            </Link>
             <Button
               variant="ghost"
               size="icon"
