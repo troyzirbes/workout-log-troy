@@ -470,8 +470,14 @@ function WorkoutDetail() {
                       <h2 className="font-display text-lg font-semibold">
                         {entry.exercises.name}
                       </h2>
-                      {entry.success && (
-                        <TrendingUp className="size-5 text-success" />
+                      {entry.weight_direction === "up" && (
+                        <ArrowUp className="size-5 text-success" aria-label="Increase weights next time" />
+                      )}
+                      {entry.weight_direction === "same" && (
+                        <ArrowRight className="size-5 text-muted-foreground" aria-label="Keep weights the same" />
+                      )}
+                      {entry.weight_direction === "down" && (
+                        <ArrowDown className="size-5 text-warning" aria-label="Decrease weights next time" />
                       )}
                     </div>
                     {entry.exercises.muscle_group && (
