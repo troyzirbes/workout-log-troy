@@ -80,43 +80,44 @@ function MetricsPage() {
         )}
 
         {data.map(({ group, series }) => {
-        const chartData = buildChartData(series);
-        return (
-          <section
-            key={group}
-            className="rounded-2xl border border-border bg-card p-5 shadow-sm"
-          >
-            <h2 className="mb-4 font-display text-lg font-semibold">{group}</h2>
-            <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ left: 0, right: 16, top: 8, bottom: 8 }}>
-                  <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-                  <XAxis dataKey="label" tick={AXIS_TICK} />
-                  <YAxis tick={AXIS_TICK} width={56} />
-                  <Tooltip
-                    contentStyle={TOOLTIP_STYLE}
-                    labelFormatter={(_, payload) =>
-                      payload?.[0] ? formatDate(payload[0].payload.date) : ""
-                    }
-                  />
-                  <Legend wrapperStyle={{ paddingTop: 8 }} />
-                  {series.map((s) => (
-                    <Line
-                      key={s.exerciseId}
-                      type="monotone"
-                      dataKey={s.exerciseName}
-                      stroke={s.color}
-                      strokeWidth={2}
-                      dot={{ r: 3, fill: s.color }}
-                      activeDot={{ r: 5 }}
+          const chartData = buildChartData(series);
+          return (
+            <section
+              key={group}
+              className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+            >
+              <h2 className="mb-4 font-display text-lg font-semibold">{group}</h2>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ left: 0, right: 16, top: 8, bottom: 8 }}>
+                    <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+                    <XAxis dataKey="label" tick={AXIS_TICK} />
+                    <YAxis tick={AXIS_TICK} width={56} />
+                    <Tooltip
+                      contentStyle={TOOLTIP_STYLE}
+                      labelFormatter={(_, payload) =>
+                        payload?.[0] ? formatDate(payload[0].payload.date) : ""
+                      }
                     />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
-        );
-      })}
-    </div>
+                    <Legend wrapperStyle={{ paddingTop: 8 }} />
+                    {series.map((s) => (
+                      <Line
+                        key={s.exerciseId}
+                        type="monotone"
+                        dataKey={s.exerciseName}
+                        stroke={s.color}
+                        strokeWidth={2}
+                        dot={{ r: 3, fill: s.color }}
+                        activeDot={{ r: 5 }}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </AppShell>
   );
 }
