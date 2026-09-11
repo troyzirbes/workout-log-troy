@@ -222,7 +222,7 @@ export const metricsQuery = {
         supabase
           .from("workout_exercises")
           .select("exercise_id, exercise_sets(*), workouts!inner(date)")
-          .order("workouts.date", { ascending: true }),
+          .order("created_at", { ascending: true }),
       ]);
     if (eErr) throw eErr;
     if (wErr) throw wErr;
