@@ -24,6 +24,7 @@ import {
   type LastPerformance,
   type WeightDirection,
 } from "@/lib/workout-queries";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -331,6 +332,13 @@ function WorkoutDetail() {
   const entries = data.entries;
   const lastByExercise = data.lastByExercise;
   const used = new Set(entries.map((e) => e.exercise_id));
+  const muscleGroupsCovered = [
+    ...new Set(
+      entries
+        .map((e) => e.exercises.muscle_group)
+        .filter((g): g is string => Boolean(g)),
+    ),
+  ];
 
   return (
     <AppShell>
@@ -351,6 +359,18 @@ function WorkoutDetail() {
               {formatDate(workout.date)}
             </p>
             {workout.notes && <p className="mt-3 text-sm">{workout.notes}</p>}
+            {muscleGroupsCovered.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Muscle groups
+                </span>
+                {muscleGroupsCovered.map((group) => (
+                  <Badge key={group} variant="secondary">
+                    {group}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -481,9 +501,9 @@ function WorkoutDetail() {
                       )}
                     </div>
                     {entry.exercises.muscle_group && (
-                      <p className="text-sm text-muted-foreground">
+                      <Badge variant="outline" className="mt-1">
                         {entry.exercises.muscle_group}
-                      </p>
+                      </Badge>
                     )}
                     <LastTime last={lastByExercise.get(entry.exercise_id)} />
                   </div>
