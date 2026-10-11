@@ -332,6 +332,13 @@ function WorkoutDetail() {
   const entries = data.entries;
   const lastByExercise = data.lastByExercise;
   const used = new Set(entries.map((e) => e.exercise_id));
+  const muscleGroupsCovered = [
+    ...new Set(
+      entries
+        .map((e) => e.exercises.muscle_group)
+        .filter((g): g is string => Boolean(g)),
+    ),
+  ];
 
   return (
     <AppShell>
