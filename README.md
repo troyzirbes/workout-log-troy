@@ -1,14 +1,18 @@
-# Welcome to your Lovable project
+# My Workout Log
+
+I want to create a personal website (just for me) to track my workouts. I'd like to be able to identify exercises assigned to workouts, document dates of workouts, identify reps, sets and weights and see simple gifs of how the exercise is done.
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://workout-log-troy.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/a1b75702-d1d1-4cd5-83fe-e74f0c82d9cd).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +24,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
