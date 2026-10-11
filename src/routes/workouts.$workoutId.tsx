@@ -501,9 +501,9 @@ function WorkoutDetail() {
                       )}
                     </div>
                     {entry.exercises.muscle_group && (
-                      <p className="text-sm text-muted-foreground">
+                      <Badge variant="outline" className="mt-1">
                         {entry.exercises.muscle_group}
-                      </p>
+                      </Badge>
                     )}
                     <LastTime last={lastByExercise.get(entry.exercise_id)} />
                   </div>
