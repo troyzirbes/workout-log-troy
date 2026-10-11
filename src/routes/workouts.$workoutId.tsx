@@ -359,6 +359,18 @@ function WorkoutDetail() {
               {formatDate(workout.date)}
             </p>
             {workout.notes && <p className="mt-3 text-sm">{workout.notes}</p>}
+            {muscleGroupsCovered.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Muscle groups
+                </span>
+                {muscleGroupsCovered.map((group) => (
+                  <Badge key={group} variant="secondary">
+                    {group}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
