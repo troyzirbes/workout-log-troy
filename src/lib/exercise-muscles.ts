@@ -30,3 +30,70 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
 export function getExerciseMuscles(name: string): MuscleTargets | undefined {
   return EXERCISE_MUSCLES[name.trim().toLowerCase()];
 }
+
+// Labels that describe the same area under different names, so a workout
+// summary lists each area once.
+const MUSCLE_ALIASES: Record<string, string> = {
+  gastrocnemius: "calves",
+  soleus: "calves",
+  "gluteus maximus": "glutes",
+  rhomboids: "mid-back",
+  "mid traps": "mid-back",
+};
+
+// Preferred wording when several labels collapse into one area.
+// Stable wording for the summary, so the same area reads the same everywhere.
+const MUSCLE_DISPLAY: Record<string, string> = {
+  calves: "Calves",
+  glutes: "Glutes",
+  "mid-back": "Mid-back",
+  "upper traps": "Upper traps",
+  lats: "Lats",
+  forearms: "Forearms",
+  quads: "Quads",
+  hamstrings: "Hamstrings",
+  chest: "Chest",
+  triceps: "Triceps",
+  biceps: "Biceps",
+  "front shoulders": "Front shoulders",
+  "side shoulders": "Side shoulders",
+  "rear shoulders": "Rear shoulders",
+  "inner thighs": "Inner thighs",
+  "side glutes": "Side glutes",
+  core: "Core",
+  "lower-back stabilizers": "Lower back",
+  "shoulder stabilizers": "Shoulder stabilizers",
+};
+
+// "Quads (front thighs)" and "Quads" describe the same area.
+function muscleKey(label: string) {
+  const base = label.replace(/\s*\(.*?\)\s*/g, "").trim().toLowerCase();
+  return MUSCLE_ALIASES[base] ?? base;
+}
+
+export type WorkedMuscle = {
+  label: string;
+  primary: boolean;
+};
+
+// Areas a set of exercises covers, each listed once, primaries first.
+export function musclesWorked(names: string[]): WorkedMuscle[] {
+  const seen = new Map<string, WorkedMuscle>();
+
+  const add = (label: string, isPrimary: boolean) => {
+    const key = muscleKey(label);
+    if (!key) return;
+    const existing = seen.get(key);
+    if (existing) {
+      existing.primary = existing.primary || isPrimary;
+      return;
+    }
+    seen.set(key, { label: MUSCLE_DISPLAY[key] ?? label.trim(), primary: isPrimary });
+  };
+
+  const targets = names.map((name) => getExerciseMuscles(name));
+  for (const targets_ of targets) targets_?.primary.forEach((label) => add(label, true));
+  for (const targets_ of targets) targets_?.supporting.forEach((label) => add(label, false));
+
+  return [...seen.values()];
+}
