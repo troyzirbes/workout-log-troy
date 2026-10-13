@@ -635,7 +635,8 @@ function WorkoutDetail() {
               </div>
             </div>
           </section>
-        ))}
+          );
+        })}
       </div>
     </AppShell>
   );
