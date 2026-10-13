@@ -26,7 +26,17 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
   "standing calf raises": { primary: ["Gastrocnemius (upper calf)"], supporting: ["Soleus (deeper calf)"] },
   "dumbbell romanian deadlifts": { primary: ["Hamstrings (back thighs)", "Glutes"], supporting: ["Lower-back stabilizers", "Forearms (grip)"] },
   "bulgarian split squats": { primary: ["Quads (front thighs)", "Glutes"], supporting: ["Inner thighs (adductors)", "Side glutes (hip stabilizers)"] },
-  "dumbbell hip thrusts": { primary: ["Gluteus maximus (main glutes)"], supporting: ["Hamstrings", "Inner thighs (adductors)"] },
+"dumbbell hip thrusts": { primary: ["Gluteus maximus (main glutes)"], supporting: ["Hamstrings", "Inner thighs (adductors)"] },
+  // Compound exercises
+  "arnold press": { primary: ["Front shoulders", "Side shoulders"], supporting: ["Triceps", "Upper traps"] },
+  "dumbbell push press": { primary: ["Front shoulders", "Side shoulders"], supporting: ["Triceps", "Quads (drive)", "Core (abs & obliques)"] },
+  "dumbbell clean and press": { primary: ["Front shoulders", "Triceps"], supporting: ["Upper traps", "Glutes", "Hamstrings", "Quads (front thighs)"] },
+  "dumbbell upright row": { primary: ["Side shoulders (lateral delts)", "Upper traps (neck & shoulders)"], supporting: ["Biceps", "Rear shoulders"] },
+  "turkish get-up": { primary: ["Front shoulders", "Core (abs & obliques)"], supporting: ["Triceps", "Glutes", "Shoulder stabilizers"] },
+  "dumbbell thrusters": { primary: ["Quads (front thighs)", "Front shoulders"], supporting: ["Glutes", "Triceps", "Core (abs & obliques)"] },
+  "dumbbell front squat": { primary: ["Quads (front thighs)"], supporting: ["Glutes", "Core (abs & obliques)", "Upper traps"] },
+  "dumbbell snatch": { primary: ["Glutes", "Hamstrings (back thighs)", "Front shoulders"], supporting: ["Quads (front thighs)", "Upper traps", "Triceps", "Core (abs & obliques)"] },
+  "renegade rows": { primary: ["Lats (sides of back)", "Mid-back (rhomboids & traps)"], supporting: ["Core (abs & obliques)", "Triceps", "Rear shoulders"] },
 };
 
 export function getExerciseMuscles(name: string): MuscleTargets | undefined {
