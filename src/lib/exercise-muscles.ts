@@ -42,10 +42,27 @@ const MUSCLE_ALIASES: Record<string, string> = {
 };
 
 // Preferred wording when several labels collapse into one area.
+// Stable wording for the summary, so the same area reads the same everywhere.
 const MUSCLE_DISPLAY: Record<string, string> = {
   calves: "Calves",
   glutes: "Glutes",
   "mid-back": "Mid-back",
+  "upper traps": "Upper traps",
+  lats: "Lats",
+  forearms: "Forearms",
+  quads: "Quads",
+  hamstrings: "Hamstrings",
+  chest: "Chest",
+  triceps: "Triceps",
+  biceps: "Biceps",
+  "front shoulders": "Front shoulders",
+  "side shoulders": "Side shoulders",
+  "rear shoulders": "Rear shoulders",
+  "inner thighs": "Inner thighs",
+  "side glutes": "Side glutes",
+  core: "Core",
+  "lower-back stabilizers": "Lower back",
+  "shoulder stabilizers": "Shoulder stabilizers",
 };
 
 // "Quads (front thighs)" and "Quads" describe the same area.
