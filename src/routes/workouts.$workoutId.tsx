@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
-import { getExerciseMuscles } from "@/lib/exercise-muscles";
+import { getExerciseMuscles, musclesWorked } from "@/lib/exercise-muscles";
 import { supabase } from "@/integrations/supabase/client";
 import {
   exercisesQuery,
@@ -335,13 +335,7 @@ function WorkoutDetail() {
   const entries = data.entries;
   const lastByExercise = data.lastByExercise;
   const used = new Set(entries.map((e) => e.exercise_id));
-  const muscleGroupsCovered = [
-    ...new Set(
-      entries
-        .map((e) => e.exercises.muscle_group)
-        .filter((g): g is string => Boolean(g)),
-    ),
-  ];
+  const workedMuscles = musclesWorked(entries.map((e) => e.exercises.name));
 
   return (
     <AppShell>
@@ -362,16 +356,24 @@ function WorkoutDetail() {
               {formatDate(workout.date)}
             </p>
             {workout.notes && <p className="mt-3 text-sm">{workout.notes}</p>}
-            {muscleGroupsCovered.length > 0 && (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Muscle groups
-                </span>
-                {muscleGroupsCovered.map((group) => (
-                  <Badge key={group} variant="secondary">
-                    {group}
-                  </Badge>
-                ))}
+            {workedMuscles.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Muscles worked
+                  </span>
+                  {workedMuscles.map((muscle) => (
+                    <Badge
+                      key={muscle.label}
+                      variant={muscle.primary ? "secondary" : "outline"}
+                    >
+                      {muscle.label}
+                    </Badge>
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Filled = primary target · outlined = supporting
+                </p>
               </div>
             )}
           </div>
