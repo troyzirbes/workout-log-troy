@@ -22,6 +22,8 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Lift Log — My Workout Journal" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         name: "description",
         content:

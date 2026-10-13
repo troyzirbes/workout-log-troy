@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep standard exercise muscle recruitment in a browser-safe lookup keyed by normalized exercise name; workout details use it without changing saved muscle-group categories or workout data.
