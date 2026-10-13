@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
+import { getExerciseMuscles } from "@/lib/exercise-muscles";
 import { supabase } from "@/integrations/supabase/client";
 import {
   exercisesQuery,
@@ -56,6 +57,8 @@ export const Route = createFileRoute("/workouts/$workoutId")({
         name: "description",
         content: "Exercises, sets, reps and weights for this training session.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { property: "og:title", content: "Workout Details — Lift Log" },
       {
         property: "og:description",
@@ -460,7 +463,9 @@ function WorkoutDetail() {
           </div>
         )}
 
-        {entries.map((entry) => (
+        {entries.map((entry) => {
+          const muscles = getExerciseMuscles(entry.exercises.name);
+          return (
           <section
             key={entry.id}
             className={cn(
@@ -504,6 +509,20 @@ function WorkoutDetail() {
                       <Badge variant="outline" className="mt-1">
                         {entry.exercises.muscle_group}
                       </Badge>
+                    )}
+                    {muscles && (
+                      <dl className="mt-2 space-y-1 text-xs leading-relaxed text-muted-foreground">
+                        <div>
+                          <dt className="inline font-medium text-foreground">Primary: </dt>
+                          <dd className="inline">{muscles.primary.join(" · ")}</dd>
+                        </div>
+                        {muscles.supporting.length > 0 && (
+                          <div>
+                            <dt className="inline font-medium text-foreground">Supporting: </dt>
+                            <dd className="inline">{muscles.supporting.join(" · ")}</dd>
+                          </div>
+                        )}
+                      </dl>
                     )}
                     <LastTime last={lastByExercise.get(entry.exercise_id)} />
                   </div>
