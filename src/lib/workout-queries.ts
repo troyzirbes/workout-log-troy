@@ -24,9 +24,13 @@ export function groupExercisesByMuscleGroup(exercises: Exercise[]) {
     if (!groups.has(group)) groups.set(group, []);
     groups.get(group)!.push(ex);
   }
-  for (const list of groups.values()) {
-    list.sort((a, b) => a.name.localeCompare(b.name));
-  }
+  // "✪ " marks compound exercises; keep them at the bottom of each group.
+  list.sort((a, b) => {
+    const ac = a.name.startsWith("✪") ? 1 : 0;
+    const bc = b.name.startsWith("✪") ? 1 : 0;
+    if (ac !== bc) return ac - bc;
+    return a.name.localeCompare(b.name);
+  });
   return [...groups.entries()].sort(([a], [b]) => {
     const ia = MUSCLE_GROUP_ORDER.indexOf(a);
     const ib = MUSCLE_GROUP_ORDER.indexOf(b);
