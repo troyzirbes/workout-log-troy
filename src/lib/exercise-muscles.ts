@@ -15,6 +15,7 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
 "hammer curls": { primary: ["Brachialis (under biceps)", "Brachioradialis (outer forearm)"], supporting: ["Biceps"] },
   "hammer curls to shoulder press": { primary: ["Brachialis (under biceps)", "Front shoulders"], supporting: ["Biceps", "Brachioradialis (outer forearm)", "Side shoulders", "Triceps"] },
   "flyes to bench press": { primary: ["Chest"], supporting: ["Front shoulders", "Triceps"] },
+  "single-arm preacher curl": { primary: ["Biceps (short-head emphasis)"], supporting: ["Brachialis (under biceps)", "Forearms"] },
   "overhead triceps extension": { primary: ["Triceps (long-head emphasis)"], supporting: [] },
   "dumbbell skullcrushers": { primary: ["Triceps"], supporting: [] },
   "seated overhead press": { primary: ["Front shoulders", "Side shoulders"], supporting: ["Triceps", "Upper traps"] },
