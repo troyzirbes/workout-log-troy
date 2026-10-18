@@ -4,8 +4,9 @@ import { useState } from "react";
 import { CalendarDays, Plus, Trash2 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
+import { AnatomyHeatMap } from "@/components/AnatomyMap";
 import { supabase } from "@/integrations/supabase/client";
-import { workoutsQuery } from "@/lib/workout-queries";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,10 +50,55 @@ function formatDate(value: string) {
   });
 }
 
+type ListWorkout = {
+  id: string;
+  title: string;
+  date: string;
+  workout_exercises: { exercises: { name: string } | null }[];
+};
+
+const workoutListQuery = {
+  queryKey: ["workouts", "with-exercises"],
+  queryFn: async (): Promise<ListWorkout[]> => {
+    const { data, error } = await supabase
+      .from("workouts")
+      .select("id, title, date, workout_exercises(exercises(name))")
+      .order("date", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as unknown as ListWorkout[];
+  },
+};
+
+// Sunday that starts the week containing an ISO date (YYYY-MM-DD).
+function weekStart(value: string) {
+  const [y, m, d] = value.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() - dt.getDay());
+  return dt;
+}
+
+function weekLabel(start: Date) {
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const f = (x: Date) => x.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return `${f(start)} – ${f(end)}, ${end.getFullYear()}`;
+}
+
+function groupByWeek(list: ListWorkout[]) {
+  const map = new Map<number, { start: Date; workouts: ListWorkout[] }>();
+  for (const w of list) {
+    const start = weekStart(w.date);
+    const k = start.getTime();
+    if (!map.has(k)) map.set(k, { start, workouts: [] });
+    map.get(k)!.workouts.push(w);
+  }
+  return [...map.values()].sort((a, b) => b.start.getTime() - a.start.getTime());
+}
+
 function WorkoutsPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const { data: workouts = [], isLoading } = useQuery(workoutsQuery);
+  const { data: workouts = [], isLoading } = useQuery(workoutListQuery);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -155,34 +201,58 @@ function WorkoutsPage() {
         </div>
       )}
 
-      <ul className="space-y-3">
-        {workouts.map((w) => (
-          <li
-            key={w.id}
-            className="surface-soft group flex items-center gap-4 rounded-2xl border border-border p-4"
-          >
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
-              <CalendarDays className="size-5" />
-            </span>
-            <Link
-              to="/workouts/$workoutId"
-              params={{ workoutId: w.id }}
-              className="min-w-0 flex-1"
-            >
-              <p className="truncate font-display text-lg font-semibold">{w.title}</p>
-              <p className="text-sm text-muted-foreground">{formatDate(w.date)}</p>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Delete workout"
-              onClick={() => remove.mutate(w.id)}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </li>
-        ))}
-      </ul>
+      <div className="space-y-8">
+        {groupByWeek(workouts).map((week) => {
+          const names = week.workouts.flatMap((w) =>
+            w.workout_exercises.map((e) => e.exercises?.name).filter((n): n is string => !!n),
+          );
+          return (
+            <section key={week.start.getTime()} className="surface-soft rounded-2xl border border-border p-4">
+              <h2 className="mb-3 font-display text-lg font-semibold">
+                Week of {weekLabel(week.start)}
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {week.workouts.length} workout{week.workouts.length === 1 ? "" : "s"} · {names.length} exercise
+                  {names.length === 1 ? "" : "s"}
+                </span>
+              </h2>
+              <div className="flex flex-col gap-4 md:flex-row md:items-start">
+                <ul className="min-w-0 flex-1 space-y-3">
+                  {week.workouts.map((w) => (
+                    <li
+                      key={w.id}
+                      className="group flex items-center gap-4 rounded-xl border border-border bg-background/60 p-3"
+                    >
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+                        <CalendarDays className="size-5" />
+                      </span>
+                      <Link to="/workouts/$workoutId" params={{ workoutId: w.id }} className="min-w-0 flex-1">
+                        <p className="truncate font-display text-base font-semibold">{w.title}</p>
+                        <p className="text-sm text-muted-foreground">{formatDate(w.date)}</p>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Delete workout"
+                        onClick={() => remove.mutate(w.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="shrink-0">
+                  <AnatomyHeatMap exerciseNames={names} />
+                  <div className="mt-1 flex items-center justify-center gap-2 text-[10px] text-muted-foreground">
+                    <span>Less</span>
+                    <span className="h-2 w-16 rounded-full bg-gradient-to-r from-primary/15 to-primary" />
+                    <span>More</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        })}
+      </div>
     </AppShell>
   );
 }
