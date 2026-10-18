@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
+import { AnatomyMap } from "@/components/AnatomyMap";
 import { getExerciseMuscles, musclesWorked } from "@/lib/exercise-muscles";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -398,6 +399,37 @@ function WorkoutDetail() {
             </DialogContent>
           </Dialog>
         </div>
+        <p className="mt-1 text-sm text-muted-foreground">{formatDate(workout.date)}</p>
+        {workout.notes && <p className="mt-3 text-sm">{workout.notes}</p>}
+
+        {workedMuscles.length > 0 && (
+          <div className="mt-5 grid gap-6 sm:grid-cols-[1fr_auto] sm:items-start">
+            <div className="space-y-4">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                Muscles worked
+              </span>
+              <div>
+                <p className="mb-1.5 text-xs font-medium">Primary</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {workedMuscles.filter((m) => m.primary).map((m) => (
+                    <Badge key={m.key} variant="default">{m.label}</Badge>
+                  ))}
+                </div>
+              </div>
+              {workedMuscles.some((m) => !m.primary) && (
+                <div>
+                  <p className="mb-1.5 text-xs font-medium">Supporting</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {workedMuscles.filter((m) => !m.primary).map((m) => (
+                      <Badge key={m.key} variant="outline">{m.label}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <AnatomyMap muscles={workedMuscles} />
+          </div>
+        )}
       </header>
 
       <div className="mt-8 flex flex-wrap items-center gap-2">
