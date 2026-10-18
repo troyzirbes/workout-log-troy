@@ -80,7 +80,7 @@ const MUSCLE_DISPLAY: Record<string, string> = {
 };
 
 // "Quads (front thighs)" and "Quads" describe the same area.
-function muscleKey(label: string) {
+export function muscleKey(label: string) {
   const base = label.replace(/\s*\(.*?\)\s*/g, "").trim().toLowerCase();
   return MUSCLE_ALIASES[base] ?? base;
 }
