@@ -349,35 +349,8 @@ function WorkoutDetail() {
       <RestTimer />
 
       <header className="surface-soft rounded-2xl border border-border p-5 transition-colors">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-semibold">{workout.title}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {formatDate(workout.date)}
-            </p>
-            {workout.notes && <p className="mt-3 text-sm">{workout.notes}</p>}
-            {workedMuscles.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                    Muscles worked
-                  </span>
-                  {workedMuscles.map((muscle) => (
-                    <Badge
-                      key={muscle.label}
-                      variant={muscle.primary ? "secondary" : "outline"}
-                    >
-                      {muscle.label}
-                    </Badge>
-                  ))}
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Filled = primary target · outlined = supporting
-                </p>
-              </div>
-            )}
-          </div>
-
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-3xl font-semibold">{workout.title}</h1>
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
             <DialogTrigger asChild>
               <Button variant="secondary" size="sm">
