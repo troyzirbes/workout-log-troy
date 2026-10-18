@@ -1,4 +1,4 @@
-import type { WorkedMuscle } from "@/lib/exercise-muscles";
+import { getExerciseMuscles, muscleKey, type WorkedMuscle } from "@/lib/exercise-muscles";
 
 type Shape =
   | { kind: "ellipse"; cx: number; cy: number; rx: number; ry: number }
@@ -128,6 +128,71 @@ export function AnatomyMap({ muscles }: { muscles: WorkedMuscle[] }) {
     <div className="flex items-end justify-center gap-2">
       <Figure regions={FRONT} levels={levels} label="Front" />
       <Figure regions={BACK} levels={levels} label="Back" />
+    </div>
+  );
+}
+
+// Cumulative heat: score per muscle key (primary hits count 2, supporting 1).
+export function exerciseHeatScores(names: string[]) {
+  const scores = new Map<string, number>();
+  for (const name of names) {
+    const t = getExerciseMuscles(name);
+    if (!t) continue;
+    const add = (label: string, w: number) => {
+      const key = muscleKey(label);
+      if (key) scores.set(key, (scores.get(key) ?? 0) + w);
+    };
+    t.primary.forEach((l) => add(l, 2));
+    t.supporting.forEach((l) => add(l, 1));
+  }
+  return scores;
+}
+
+function HeatFigure({ regions, heat, label }: { regions: Region[]; heat: Map<string, number>; label: string }) {
+  const side = (mirror: boolean) => (
+    <g transform={mirror ? "translate(100 0) scale(-1 1)" : undefined}>
+      <ellipse cx={24} cy={93} rx={3} ry={4} className="fill-muted" />
+      <polygon points="35,82 50,84 50,100 34,98" className="fill-muted" />
+      <ellipse cx={43} cy={190} rx={5} ry={3} className="fill-muted" />
+      {regions.map((r) => (
+        <g key={r.id}>
+          <ShapeEl shape={r.shape} className="fill-muted stroke-background" />
+          {(heat.get(r.id) ?? 0) > 0 && (
+            <g style={{ fillOpacity: 0.15 + 0.85 * (heat.get(r.id) ?? 0) }}>
+              <ShapeEl shape={r.shape} className="fill-primary stroke-background" />
+            </g>
+          )}
+        </g>
+      ))}
+    </g>
+  );
+  return (
+    <figure className="flex flex-col items-center">
+      <svg viewBox="0 0 100 200" className="h-36 w-auto" role="img" aria-label={`${label} heat map of muscles worked this week`}>
+        <circle cx={50} cy={13} r={9} className="fill-muted" />
+        <rect x={46} y={20} width={8} height={7} className="fill-muted" />
+        <g strokeWidth={0.8}>
+          {side(false)}
+          {side(true)}
+        </g>
+      </svg>
+      <figcaption className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</figcaption>
+    </figure>
+  );
+}
+
+export function AnatomyHeatMap({ exerciseNames }: { exerciseNames: string[] }) {
+  const scores = exerciseHeatScores(exerciseNames);
+  const raw = new Map<string, number>();
+  for (const [key, s] of scores) {
+    for (const id of KEY_REGIONS[key] ?? []) raw.set(id, (raw.get(id) ?? 0) + s);
+  }
+  const max = Math.max(1, ...raw.values());
+  const heat = new Map([...raw].map(([k, v]) => [k, v / max]));
+  return (
+    <div className="flex items-end justify-center gap-1">
+      <HeatFigure regions={FRONT} heat={heat} label="Front" />
+      <HeatFigure regions={BACK} heat={heat} label="Back" />
     </div>
   );
 }
