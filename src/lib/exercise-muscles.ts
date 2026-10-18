@@ -86,6 +86,7 @@ function muscleKey(label: string) {
 }
 
 export type WorkedMuscle = {
+  key: string;
   label: string;
   primary: boolean;
 };
@@ -102,7 +103,7 @@ export function musclesWorked(names: string[]): WorkedMuscle[] {
       existing.primary = existing.primary || isPrimary;
       return;
     }
-    seen.set(key, { label: MUSCLE_DISPLAY[key] ?? label.trim(), primary: isPrimary });
+    seen.set(key, { key, label: MUSCLE_DISPLAY[key] ?? label.trim(), primary: isPrimary });
   };
 
   const targets = names.map((name) => getExerciseMuscles(name));
