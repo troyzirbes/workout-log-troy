@@ -27,7 +27,12 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
   "standing calf raises": { primary: ["Gastrocnemius (upper calf)"], supporting: ["Soleus (deeper calf)"] },
   "dumbbell romanian deadlifts": { primary: ["Hamstrings (back thighs)", "Glutes"], supporting: ["Lower-back stabilizers", "Forearms (grip)"] },
   "bulgarian split squats": { primary: ["Quads (front thighs)", "Glutes"], supporting: ["Inner thighs (adductors)", "Side glutes (hip stabilizers)"] },
-"dumbbell hip thrusts": { primary: ["Gluteus maximus (main glutes)"], supporting: ["Hamstrings", "Inner thighs (adductors)"] },
+  "dumbbell hip thrusts": { primary: ["Gluteus maximus (main glutes)"], supporting: ["Hamstrings", "Inner thighs (adductors)"] },
+  // Gym machines (➭ prefix)
+  "leg press machine": { primary: ["Quads (front thighs)", "Glutes"], supporting: ["Hamstrings"] },
+  "leg curl machine": { primary: ["Hamstrings (back thighs)"], supporting: ["Calves", "Glutes"] },
+  "leg extension machine": { primary: ["Quads (front thighs)"], supporting: [] },
+  "stair climber": { primary: ["Quads (front thighs)", "Glutes", "Calves"], supporting: ["Hamstrings"] },
   // Compound exercises
   "arnold press": { primary: ["Front shoulders", "Side shoulders"], supporting: ["Triceps", "Upper traps"] },
   "dumbbell push press": { primary: ["Front shoulders", "Side shoulders"], supporting: ["Triceps", "Quads (drive)", "Core (abs & obliques)"] },
