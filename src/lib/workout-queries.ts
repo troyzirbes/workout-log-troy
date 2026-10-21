@@ -188,12 +188,13 @@ export const exerciseHistoryQuery = (exerciseId: string) => ({
   queryFn: async (): Promise<ExerciseHistoryPoint[]> => {
     const { data, error } = await supabase
       .from("workout_exercises")
-      .select("exercise_sets(*), workouts!inner(date, title)")
+      .select("exercise_sets(*), exercises(name), workouts!inner(date, title)")
       .eq("exercise_id", exerciseId);
     if (error) throw error;
 
     type Row = {
       exercise_sets: ExerciseSet[];
+      exercises: { name: string } | null;
       workouts: { date: string; title: string };
     };
     const points: ExerciseHistoryPoint[] = [];
@@ -202,7 +203,11 @@ export const exerciseHistoryQuery = (exerciseId: string) => ({
       if (sets.length === 0) continue;
       const totalReps = sets.reduce((sum, s) => sum + s.reps, 0);
       const topWeight = Math.max(...sets.map((s) => s.weight));
-      const volume = sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
+      // For the stair climber, "volume" is the step count rather than a
+      // meaningless steps × minutes product.
+      const volume = isStairClimber(row.exercises?.name ?? "")
+        ? totalReps
+        : sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
       points.push({
         date: row.workouts.date,
         workoutTitle: row.workouts.title,
