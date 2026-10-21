@@ -52,6 +52,12 @@ export type ExerciseSet = {
   weight: number;
 };
 
+// The Stair Climber logs time (minutes) and steps instead of reps and weight;
+// the reps field holds steps and the weight field holds minutes.
+export function isStairClimber(name: string) {
+  return name.replace(/[✪➭]/g, "").trim().toLowerCase() === "stair climber";
+}
+
 export type WeightDirection = "up" | "same" | "down";
 
 export type WorkoutExercise = {
