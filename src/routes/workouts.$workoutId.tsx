@@ -281,10 +281,16 @@ function WorkoutDetail() {
   });
 
   const addSet = useMutation({
-    mutationFn: async ({ id, next }: { id: string; next: number }) => {
+    mutationFn: async ({ id, next, name }: { id: string; next: number; name: string }) => {
+      const stairs = isStairClimber(name);
       const { error } = await supabase
         .from("exercise_sets")
-        .insert({ workout_exercise_id: id, set_number: next, reps: 8, weight: 0 });
+        .insert({
+          workout_exercise_id: id,
+          set_number: next,
+          reps: stairs ? 100 : 8,
+          weight: stairs ? 10 : 0,
+        });
       if (error) throw error;
     },
     onSuccess: invalidate,
