@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   exercisesQuery,
   groupExercisesByMuscleGroup,
+  isStairClimber,
   workoutDetailQuery,
   type LastPerformance,
   type WeightDirection,
@@ -86,7 +87,7 @@ const DIRECTION_EMOJI: Record<WeightDirection, string> = {
   down: "⬇️",
 };
 
-function LastTime({ last }: { last?: LastPerformance }) {
+function LastTime({ last, timeSteps = false }: { last?: LastPerformance; timeSteps?: boolean }) {
   if (!last) {
     return (
       <p className="mt-1 text-xs text-muted-foreground">First time logging this one.</p>
@@ -95,7 +96,9 @@ function LastTime({ last }: { last?: LastPerformance }) {
   return (
     <p className="mt-1 text-xs text-muted-foreground">
       Last time ({formatDate(last.date)}):{" "}
-      {last.sets.map((s) => `${s.reps}×${s.weight}`).join(" · ")}
+      {timeSteps
+        ? last.sets.map((s) => `${s.weight} min · ${s.reps} steps`).join(" · ")
+        : last.sets.map((s) => `${s.reps}×${s.weight}`).join(" · ")}
       <span className="ml-2" aria-label={`Weight direction: ${last.weightDirection}`}>
         {DIRECTION_EMOJI[last.weightDirection]} 🏋️
       </span>
