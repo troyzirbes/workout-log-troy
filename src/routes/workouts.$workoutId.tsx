@@ -572,7 +572,7 @@ function WorkoutDetail() {
                         type="number"
                         min={0}
                         defaultValue={set.reps}
-                        aria-label="Reps"
+                        aria-label={stairs ? "Steps" : "Reps"}
                         onBlur={(e) =>
                           updateSet.mutate({
                             id: set.id,
@@ -584,9 +584,9 @@ function WorkoutDetail() {
                       <Input
                         type="number"
                         min={0}
-                        step="0.5"
+                        step={stairs ? "1" : "0.5"}
                         defaultValue={set.weight}
-                        aria-label="Weight"
+                        aria-label={stairs ? "Minutes" : "Weight"}
                         onBlur={(e) =>
                           updateSet.mutate({
                             id: set.id,
@@ -613,6 +613,7 @@ function WorkoutDetail() {
                         addSet.mutate({
                           id: entry.id,
                           next: entry.exercise_sets.length + 1,
+                          name: entry.exercises.name,
                         })
                       }
                     >
