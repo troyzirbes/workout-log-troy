@@ -2,6 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
+  DndContext, MouseSensor, TouchSensor, KeyboardSensor,
+  closestCenter, useSensor, useSensors, type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
   ArrowLeft,
   ArrowDown,
   ArrowRight,
@@ -17,6 +22,8 @@ import {
 
 import { AppShell } from "@/components/AppShell";
 import { AnatomyMap } from "@/components/AnatomyMap";
+import { SortableExercise } from "@/components/SortableExercise";
+import { nextExercisePosition, reorderExercises } from "@/lib/exercise-order";
 import { getExerciseMuscles, musclesWorked } from "@/lib/exercise-muscles";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -26,6 +33,7 @@ import {
   workoutDetailQuery,
   type LastPerformance,
   type WeightDirection,
+  type WorkoutExercise,
 } from "@/lib/workout-queries";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -212,6 +220,12 @@ function WorkoutDetail() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [orderError, setOrderError] = useState("");
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { delay: 180, tolerance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const workout = data?.workout;
 
@@ -257,12 +271,43 @@ function WorkoutDetail() {
     onSuccess: invalidate,
   });
 
+  const saveOrder = useMutation({
+    mutationFn: async (entries: WorkoutExercise[]) => {
+      const results = await Promise.all(entries.map(async (entry) => {
+        const { data: saved, error } = await supabase
+          .from("workout_exercises")
+          .update({ position: entry.position })
+          .eq("workout_id", workoutId)
+          .eq("id", entry.id)
+          .select("id");
+        if (error) throw error;
+        if (saved?.length !== 1) throw new Error("Exercise order was not saved");
+      }));
+      return results;
+    },
+    onMutate: async (entries) => {
+      setOrderError("");
+      await qc.cancelQueries({ queryKey: detail.queryKey });
+      qc.setQueryData<Awaited<ReturnType<typeof detail.queryFn>>>(detail.queryKey, (current) =>
+        current ? { ...current, entries } : current,
+      );
+    },
+    onError: () => setOrderError("Couldn't save the full exercise order. Please try again."),
+    onSettled: invalidate,
+  });
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id || saveOrder.isPending || !data) return;
+    const reordered = reorderExercises(data.entries, String(active.id), String(over.id));
+    if (reordered !== data.entries) saveOrder.mutate(reordered);
+  };
+
   const addExercise = useMutation({
     mutationFn: async (exerciseId: string) => {
       const { error } = await supabase.from("workout_exercises").insert({
         workout_id: workoutId,
         exercise_id: exerciseId,
-        position: data?.entries.length ?? 0,
+        position: nextExercisePosition(data?.entries ?? []),
       });
       if (error) throw error;
     },
@@ -461,7 +506,7 @@ function WorkoutDetail() {
             ))}
           </SelectContent>
         </Select>
-        <Button disabled={!picked} onClick={() => addExercise.mutate(picked)}>
+        <Button disabled={!picked || saveOrder.isPending || addExercise.isPending || removeExercise.isPending} onClick={() => addExercise.mutate(picked)}>
           <Plus className="size-4" /> Add
         </Button>
         <Link
@@ -472,7 +517,10 @@ function WorkoutDetail() {
         </Link>
       </div>
 
-      <div className="mt-6 space-y-4">
+      {orderError && <p role="alert" className="mt-4 text-sm text-destructive">{orderError}</p>}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={entries.map((entry) => entry.id)} strategy={verticalListSortingStrategy}>
+      <div className="mt-6 space-y-4" aria-label="Workout exercises" aria-busy={saveOrder.isPending}>
         {entries.length === 0 && (
           <div className="surface-soft rounded-2xl border border-border p-10 text-center text-sm text-muted-foreground">
             No exercises assigned to this workout yet.
@@ -483,8 +531,11 @@ function WorkoutDetail() {
           const muscles = getExerciseMuscles(entry.exercises.name);
           const stairs = isStairClimber(entry.exercises.name);
           return (
-          <section
+          <SortableExercise
             key={entry.id}
+            id={entry.id}
+            name={entry.exercises.name}
+            disabled={saveOrder.isPending || addExercise.isPending || removeExercise.isPending}
             className={cn(
               "overflow-hidden rounded-2xl border transition-colors",
               entry.weight_direction === "up"
@@ -492,6 +543,11 @@ function WorkoutDetail() {
                 : "surface-soft border-border",
             )}
           >
+            {(dragHandle) => <>
+            <div className="flex items-center gap-2 border-b border-border px-3 py-1">
+              {dragHandle}
+              <span className="text-xs tabular-nums text-muted-foreground">{entry.position + 1}</span>
+            </div>
             <div className="flex gap-4 p-4">
               {entry.exercises.gif_url ? (
                 <img
@@ -547,6 +603,7 @@ function WorkoutDetail() {
                     variant="ghost"
                     size="icon"
                     aria-label="Remove exercise from workout"
+                    disabled={saveOrder.isPending || removeExercise.isPending}
                     onClick={() => removeExercise.mutate(entry.id)}
                   >
                     <Trash2 className="size-4" />
@@ -652,10 +709,13 @@ function WorkoutDetail() {
                 </div>
               </div>
             </div>
-          </section>
+            </>}
+          </SortableExercise>
           );
         })}
       </div>
+      </SortableContext>
+      </DndContext>
     </AppShell>
   );
 }
