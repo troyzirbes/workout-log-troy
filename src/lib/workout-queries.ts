@@ -248,6 +248,7 @@ export const metricsQuery = {
     if (wErr) throw wErr;
 
     const exercises = (exercisesData ?? []) as Exercise[];
+    const nameByExercise = new Map(exercises.map((ex) => [ex.id, ex.name]));
     const byExercise = new Map<string, ExerciseMetricSeries["data"]>();
 
     type Row = {
@@ -260,7 +261,11 @@ export const metricsQuery = {
       if (sets.length === 0) continue;
       const totalReps = sets.reduce((sum, s) => sum + s.reps, 0);
       const topWeight = Math.max(...sets.map((s) => s.weight));
-      const volume = sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
+      // For the stair climber, "volume" is the step count rather than a
+      // meaningless steps × minutes product.
+      const volume = isStairClimber(nameByExercise.get(row.exercise_id) ?? "")
+        ? totalReps
+        : sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
       const list = byExercise.get(row.exercise_id) ?? [];
       list.push({ date: row.workouts.date, volume, topWeight, totalReps });
       byExercise.set(row.exercise_id, list);
