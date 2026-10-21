@@ -1,5 +1,8 @@
 # Roadmap
 
+## In progress
+- Reorder workout exercises with mouse and touch drag handles and save the order.
+
 ## Done
 - Replace the workout header "Muscle groups" categories with a dynamic "Muscles worked" list of primary and supporting areas, each shown once.
 - Show specific primary and supporting muscles for each known exercise in workout details.
