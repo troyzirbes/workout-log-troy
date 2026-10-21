@@ -46,8 +46,9 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
 };
 
 export function getExerciseMuscles(name: string): MuscleTargets | undefined {
-  // "✪ " marks compound exercises; the lookup is keyed by the plain name.
-  return EXERCISE_MUSCLES[name.replace(/✪/g, "").trim().toLowerCase()];
+  // "✪ " marks compound exercises and "➭ " marks gym machines; the lookup is
+  // keyed by the plain name.
+  return EXERCISE_MUSCLES[name.replace(/[✪➭]/g, "").trim().toLowerCase()];
 }
 
 // Labels that describe the same area under different names, so a workout

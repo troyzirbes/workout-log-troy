@@ -24,11 +24,14 @@ export function groupExercisesByMuscleGroup(exercises: Exercise[]) {
     if (!groups.has(group)) groups.set(group, []);
     groups.get(group)!.push(ex);
   }
-  // "✪ " marks compound exercises; keep them at the bottom of each group.
+  // "✪ " marks compound exercises and "➭ " marks gym machines; keep them at
+  // the bottom of each group, machines last.
+  const markerRank = (name: string) =>
+    name.startsWith("➭") ? 2 : name.startsWith("✪") ? 1 : 0;
   for (const list of groups.values()) {
     list.sort((a, b) => {
-      const ac = a.name.startsWith("✪") ? 1 : 0;
-      const bc = b.name.startsWith("✪") ? 1 : 0;
+      const ac = markerRank(a.name);
+      const bc = markerRank(b.name);
       if (ac !== bc) return ac - bc;
       return a.name.localeCompare(b.name);
     });
