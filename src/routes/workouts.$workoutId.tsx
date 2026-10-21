@@ -481,6 +481,7 @@ function WorkoutDetail() {
 
         {entries.map((entry) => {
           const muscles = getExerciseMuscles(entry.exercises.name);
+          const stairs = isStairClimber(entry.exercises.name);
           return (
           <section
             key={entry.id}
@@ -540,7 +541,7 @@ function WorkoutDetail() {
                         )}
                       </dl>
                     )}
-                    <LastTime last={lastByExercise.get(entry.exercise_id)} />
+                    <LastTime last={lastByExercise.get(entry.exercise_id)} timeSteps={stairs} />
                   </div>
                   <Button
                     variant="ghost"
@@ -556,8 +557,8 @@ function WorkoutDetail() {
                   {entry.exercise_sets.length > 0 && (
                     <div className="grid grid-cols-[2rem_1fr_1fr_2.25rem] items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
                       <span>Set</span>
-                      <Label className="text-xs">Reps</Label>
-                      <Label className="text-xs">Weight</Label>
+                      <Label className="text-xs">{stairs ? "Steps" : "Reps"}</Label>
+                      <Label className="text-xs">{stairs ? "Minutes" : "Weight"}</Label>
                       <span />
                     </div>
                   )}
