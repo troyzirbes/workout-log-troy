@@ -24,11 +24,14 @@ export function groupExercisesByMuscleGroup(exercises: Exercise[]) {
     if (!groups.has(group)) groups.set(group, []);
     groups.get(group)!.push(ex);
   }
-  // "✪ " marks compound exercises; keep them at the bottom of each group.
+  // "✪ " marks compound exercises and "➭ " marks gym machines; keep them at
+  // the bottom of each group, machines last.
+  const markerRank = (name: string) =>
+    name.startsWith("➭") ? 2 : name.startsWith("✪") ? 1 : 0;
   for (const list of groups.values()) {
     list.sort((a, b) => {
-      const ac = a.name.startsWith("✪") ? 1 : 0;
-      const bc = b.name.startsWith("✪") ? 1 : 0;
+      const ac = markerRank(a.name);
+      const bc = markerRank(b.name);
       if (ac !== bc) return ac - bc;
       return a.name.localeCompare(b.name);
     });
@@ -48,6 +51,12 @@ export type ExerciseSet = {
   reps: number;
   weight: number;
 };
+
+// The Stair Climber logs time (minutes) and steps instead of reps and weight;
+// the reps field holds steps and the weight field holds minutes.
+export function isStairClimber(name: string) {
+  return name.replace(/[✪➭]/g, "").trim().toLowerCase() === "stair climber";
+}
 
 export type WeightDirection = "up" | "same" | "down";
 
@@ -179,12 +188,13 @@ export const exerciseHistoryQuery = (exerciseId: string) => ({
   queryFn: async (): Promise<ExerciseHistoryPoint[]> => {
     const { data, error } = await supabase
       .from("workout_exercises")
-      .select("exercise_sets(*), workouts!inner(date, title)")
+      .select("exercise_sets(*), exercises(name), workouts!inner(date, title)")
       .eq("exercise_id", exerciseId);
     if (error) throw error;
 
     type Row = {
       exercise_sets: ExerciseSet[];
+      exercises: { name: string } | null;
       workouts: { date: string; title: string };
     };
     const points: ExerciseHistoryPoint[] = [];
@@ -193,7 +203,11 @@ export const exerciseHistoryQuery = (exerciseId: string) => ({
       if (sets.length === 0) continue;
       const totalReps = sets.reduce((sum, s) => sum + s.reps, 0);
       const topWeight = Math.max(...sets.map((s) => s.weight));
-      const volume = sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
+      // For the stair climber, "volume" is the step count rather than a
+      // meaningless steps × minutes product.
+      const volume = isStairClimber(row.exercises?.name ?? "")
+        ? totalReps
+        : sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
       points.push({
         date: row.workouts.date,
         workoutTitle: row.workouts.title,
@@ -234,6 +248,7 @@ export const metricsQuery = {
     if (wErr) throw wErr;
 
     const exercises = (exercisesData ?? []) as Exercise[];
+    const nameByExercise = new Map(exercises.map((ex) => [ex.id, ex.name]));
     const byExercise = new Map<string, ExerciseMetricSeries["data"]>();
 
     type Row = {
@@ -246,7 +261,11 @@ export const metricsQuery = {
       if (sets.length === 0) continue;
       const totalReps = sets.reduce((sum, s) => sum + s.reps, 0);
       const topWeight = Math.max(...sets.map((s) => s.weight));
-      const volume = sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
+      // For the stair climber, "volume" is the step count rather than a
+      // meaningless steps × minutes product.
+      const volume = isStairClimber(nameByExercise.get(row.exercise_id) ?? "")
+        ? totalReps
+        : sets.reduce((sum, s) => sum + s.reps * s.weight, 0);
       const list = byExercise.get(row.exercise_id) ?? [];
       list.push({ date: row.workouts.date, volume, topWeight, totalReps });
       byExercise.set(row.exercise_id, list);

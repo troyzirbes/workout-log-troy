@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   exercisesQuery,
   groupExercisesByMuscleGroup,
+  isStairClimber,
   workoutDetailQuery,
   type LastPerformance,
   type WeightDirection,
@@ -86,7 +87,7 @@ const DIRECTION_EMOJI: Record<WeightDirection, string> = {
   down: "⬇️",
 };
 
-function LastTime({ last }: { last?: LastPerformance }) {
+function LastTime({ last, timeSteps = false }: { last?: LastPerformance; timeSteps?: boolean }) {
   if (!last) {
     return (
       <p className="mt-1 text-xs text-muted-foreground">First time logging this one.</p>
@@ -95,7 +96,9 @@ function LastTime({ last }: { last?: LastPerformance }) {
   return (
     <p className="mt-1 text-xs text-muted-foreground">
       Last time ({formatDate(last.date)}):{" "}
-      {last.sets.map((s) => `${s.reps}×${s.weight}`).join(" · ")}
+      {timeSteps
+        ? last.sets.map((s) => `${s.weight} min · ${s.reps} steps`).join(" · ")
+        : last.sets.map((s) => `${s.reps}×${s.weight}`).join(" · ")}
       <span className="ml-2" aria-label={`Weight direction: ${last.weightDirection}`}>
         {DIRECTION_EMOJI[last.weightDirection]} 🏋️
       </span>
@@ -278,10 +281,16 @@ function WorkoutDetail() {
   });
 
   const addSet = useMutation({
-    mutationFn: async ({ id, next }: { id: string; next: number }) => {
+    mutationFn: async ({ id, next, name }: { id: string; next: number; name: string }) => {
+      const stairs = isStairClimber(name);
       const { error } = await supabase
         .from("exercise_sets")
-        .insert({ workout_exercise_id: id, set_number: next, reps: 8, weight: 0 });
+        .insert({
+          workout_exercise_id: id,
+          set_number: next,
+          reps: stairs ? 100 : 8,
+          weight: stairs ? 10 : 0,
+        });
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -472,6 +481,7 @@ function WorkoutDetail() {
 
         {entries.map((entry) => {
           const muscles = getExerciseMuscles(entry.exercises.name);
+          const stairs = isStairClimber(entry.exercises.name);
           return (
           <section
             key={entry.id}
@@ -531,7 +541,7 @@ function WorkoutDetail() {
                         )}
                       </dl>
                     )}
-                    <LastTime last={lastByExercise.get(entry.exercise_id)} />
+                    <LastTime last={lastByExercise.get(entry.exercise_id)} timeSteps={stairs} />
                   </div>
                   <Button
                     variant="ghost"
@@ -547,8 +557,8 @@ function WorkoutDetail() {
                   {entry.exercise_sets.length > 0 && (
                     <div className="grid grid-cols-[2rem_1fr_1fr_2.25rem] items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
                       <span>Set</span>
-                      <Label className="text-xs">Reps</Label>
-                      <Label className="text-xs">Weight</Label>
+                      <Label className="text-xs">{stairs ? "Steps" : "Reps"}</Label>
+                      <Label className="text-xs">{stairs ? "Minutes" : "Weight"}</Label>
                       <span />
                     </div>
                   )}
@@ -562,7 +572,7 @@ function WorkoutDetail() {
                         type="number"
                         min={0}
                         defaultValue={set.reps}
-                        aria-label="Reps"
+                        aria-label={stairs ? "Steps" : "Reps"}
                         onBlur={(e) =>
                           updateSet.mutate({
                             id: set.id,
@@ -574,9 +584,9 @@ function WorkoutDetail() {
                       <Input
                         type="number"
                         min={0}
-                        step="0.5"
+                        step={stairs ? "1" : "0.5"}
                         defaultValue={set.weight}
-                        aria-label="Weight"
+                        aria-label={stairs ? "Minutes" : "Weight"}
                         onBlur={(e) =>
                           updateSet.mutate({
                             id: set.id,
@@ -603,6 +613,7 @@ function WorkoutDetail() {
                         addSet.mutate({
                           id: entry.id,
                           next: entry.exercise_sets.length + 1,
+                          name: entry.exercises.name,
                         })
                       }
                     >
