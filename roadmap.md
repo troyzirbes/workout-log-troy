@@ -1,5 +1,8 @@
 # Roadmap
 
+## In progress
+- Add per-exercise expected-effort and warning-sensation callouts in workout details, with safe weight guidance; verify on desktop and phone.
+
 ## Done
 - Reorder workout exercises with mouse and touch drag handles and save the order; verified on laptop and phone with reload persistence.
 - Replace the workout header "Muscle groups" categories with a dynamic "Muscles worked" list of primary and supporting areas, each shown once.
