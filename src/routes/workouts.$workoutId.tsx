@@ -23,6 +23,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { AnatomyMap } from "@/components/AnatomyMap";
 import { SortableExercise } from "@/components/SortableExercise";
+import { ExerciseFeelingCues } from "@/components/ExerciseFeelingCues";
 import { nextExercisePosition, reorderExercises } from "@/lib/exercise-order";
 import { getExerciseMuscles, musclesWorked } from "@/lib/exercise-muscles";
 import { supabase } from "@/integrations/supabase/client";
@@ -548,23 +549,24 @@ function WorkoutDetail() {
               {dragHandle}
               <span className="text-xs tabular-nums text-muted-foreground">{entry.position + 1}</span>
             </div>
-            <div className="flex gap-4 p-4">
+            <div className="grid gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+            <div className="flex min-w-0 gap-3 sm:gap-4">
               {entry.exercises.gif_url ? (
                 <img
                   src={entry.exercises.gif_url}
                   alt={`${entry.exercises.name} demonstration`}
                   loading="lazy"
-                  className="size-24 shrink-0 rounded-xl object-cover"
+                  className="size-16 shrink-0 rounded-xl object-cover sm:size-24"
                 />
               ) : (
-                <div className="flex size-24 shrink-0 items-center justify-center rounded-xl bg-muted text-center text-xs text-muted-foreground">
+                <div className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-muted text-center text-xs text-muted-foreground sm:size-24">
                   No demo
                 </div>
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-display text-lg font-semibold">
                         {entry.exercises.name}
                       </h2>
@@ -708,6 +710,8 @@ function WorkoutDetail() {
                   </div>
                 </div>
               </div>
+            </div>
+            <ExerciseFeelingCues name={entry.exercises.name} />
             </div>
             </>}
           </SortableExercise>

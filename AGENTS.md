@@ -11,3 +11,4 @@
 
 - Keep standard exercise muscle recruitment in a browser-safe lookup keyed by normalized exercise name; workout details use it without changing saved muscle-group categories or workout data.
 - Use handle-only dnd-kit sorting for workout exercises and persist their existing position fields; isolating drag activation preserves scrolling and set-input interactions.
+- Keep exercise feeling cues in a browser-safe normalized-name lookup with a safe fallback; render them alongside each sortable exercise without changing workout records.
