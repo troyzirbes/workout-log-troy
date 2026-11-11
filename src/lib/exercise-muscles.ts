@@ -21,7 +21,7 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
   "single-arm preacher curl": { primary: ["Biceps (short-head emphasis)"], supporting: ["Brachialis (under biceps)", "Forearms"] },
   "palms-up dumbbell wrist curl": { primary: ["Forearms (underside flexors)"], supporting: ["Forearms (grip)"] },
   "overhead triceps extension": { primary: ["Triceps (long-head emphasis)"], supporting: [] },
-  "dumbbell skullcrushers": { primary: ["Triceps"], supporting: [] },
+  "decline dumbbell skullcrusher": { primary: ["Triceps"], supporting: [] },
   "seated overhead press": { primary: ["Front shoulders", "Side shoulders"], supporting: ["Triceps", "Upper traps"] },
   "dumbbell lateral raises": { primary: ["Side shoulders (lateral delts)"], supporting: ["Upper traps"] },
   "dumbbell rear delt flyes": { primary: ["Rear shoulders (rear delts)"], supporting: ["Rhomboids", "Mid traps"] },
