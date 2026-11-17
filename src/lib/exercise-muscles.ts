@@ -32,6 +32,8 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
   "dumbbell romanian deadlifts": { primary: ["Hamstrings (back thighs)", "Glutes"], supporting: ["Lower-back stabilizers", "Forearms (grip)"] },
   "bulgarian split squats": { primary: ["Quads (front thighs)", "Glutes"], supporting: ["Inner thighs (adductors)", "Side glutes (hip stabilizers)"] },
   "dumbbell hip thrusts": { primary: ["Gluteus maximus (main glutes)"], supporting: ["Hamstrings", "Inner thighs (adductors)"] },
+  // Core
+  "dumbbell side bend": { primary: ["Obliques (side abs)"], supporting: ["Lower-back stabilizers", "Forearms (grip)"] },
   // Gym machines (➭ prefix)
   "leg press machine": { primary: ["Quads (front thighs)", "Glutes"], supporting: ["Hamstrings"] },
   "leg curl machine": { primary: ["Hamstrings (back thighs)"], supporting: ["Calves", "Glutes"] },
@@ -85,6 +87,7 @@ const MUSCLE_DISPLAY: Record<string, string> = {
   "inner thighs": "Inner thighs",
   "side glutes": "Side glutes",
   core: "Core",
+  obliques: "Obliques",
   "lower-back stabilizers": "Lower back",
   "shoulder stabilizers": "Shoulder stabilizers",
 };
