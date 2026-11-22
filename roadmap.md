@@ -1,9 +1,8 @@
 # Roadmap
 
-## In progress
-- Resolve the duplicate incline flye-to-press entry by consolidating it with the existing Flyes to Bench Press if confirmed.
-
 ## Done
+- Confirm Wednesday's Goblet Squats and Friday's Side Bend reuse their existing library entries without duplicates.
+- Consolidated Tuesday's duplicate incline flye-to-press with the existing Flyes to Bench Press, preserving its two planned sets.
 - Queue the six November 22–27 workouts from the uploaded coaching plan, with exact exercise order, sets, target reps/weights, and coaching notes; verified all six in the weekly list and Tuesday's detail.
 - Add Dumbbell Side Bend under Back & Posterior Neck with side-abs muscle labels, form cues, and a shaded side-abs area on the body pictures; verified in the library and a saved workout.
 - Add per-exercise expected-effort and warning-sensation callouts with form and weight guidance; verified in a saved workout on desktop and phone.

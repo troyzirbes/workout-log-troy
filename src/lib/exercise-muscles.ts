@@ -12,7 +12,6 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
   "decline dumbbell press": { primary: ["Lower chest"], supporting: ["Triceps", "Front shoulders"] },
   "flat dumbbell bench press": { primary: ["Chest (middle fibers)"], supporting: ["Front shoulders", "Triceps"] },
   "cross-bench dumbbell pullover": { primary: ["Lats (sides of back)", "Chest (middle fibers)"], supporting: ["Triceps (long-head emphasis)", "Core"] },
-  "incline flye-to-press (hybrid)": { primary: ["Upper chest"], supporting: ["Front shoulders", "Triceps"] },
   "single-arm dumbbell row": { primary: ["Lats (sides of back)"], supporting: ["Mid-back (rhomboids & traps)", "Biceps", "Rear shoulders"] },
   "chest-supported incline row": { primary: ["Mid-back (rhomboids & traps)"], supporting: ["Lats", "Rear shoulders", "Biceps"] },
   "dumbbell shrugs": { primary: ["Upper traps (neck & shoulders)"], supporting: ["Forearms (grip)"] },
