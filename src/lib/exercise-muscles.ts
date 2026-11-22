@@ -11,6 +11,8 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
   "decline dumbbell flyes": { primary: ["Lower chest"], supporting: ["Front shoulders"] },
   "decline dumbbell press": { primary: ["Lower chest"], supporting: ["Triceps", "Front shoulders"] },
   "flat dumbbell bench press": { primary: ["Chest (middle fibers)"], supporting: ["Front shoulders", "Triceps"] },
+  "cross-bench dumbbell pullover": { primary: ["Lats (sides of back)", "Chest (middle fibers)"], supporting: ["Triceps (long-head emphasis)", "Core"] },
+  "incline flye-to-press (hybrid)": { primary: ["Upper chest"], supporting: ["Front shoulders", "Triceps"] },
   "single-arm dumbbell row": { primary: ["Lats (sides of back)"], supporting: ["Mid-back (rhomboids & traps)", "Biceps", "Rear shoulders"] },
   "chest-supported incline row": { primary: ["Mid-back (rhomboids & traps)"], supporting: ["Lats", "Rear shoulders", "Biceps"] },
   "dumbbell shrugs": { primary: ["Upper traps (neck & shoulders)"], supporting: ["Forearms (grip)"] },
@@ -49,6 +51,7 @@ const EXERCISE_MUSCLES: Record<string, MuscleTargets> = {
   "dumbbell front squat": { primary: ["Quads (front thighs)"], supporting: ["Glutes", "Core (abs & obliques)", "Upper traps"] },
   "dumbbell snatch": { primary: ["Glutes", "Hamstrings (back thighs)", "Front shoulders"], supporting: ["Quads (front thighs)", "Upper traps", "Triceps", "Core (abs & obliques)"] },
   "renegade rows": { primary: ["Lats (sides of back)", "Mid-back (rhomboids & traps)"], supporting: ["Core (abs & obliques)", "Triceps", "Rear shoulders"] },
+  "dumbbell rdl to bent-over row (hybrid)": { primary: ["Hamstrings (back thighs)", "Glutes", "Mid-back (rhomboids & traps)", "Lats (sides of back)"], supporting: ["Lower-back stabilizers", "Biceps", "Forearms (grip)"] },
 };
 
 export function getExerciseMuscles(name: string): MuscleTargets | undefined {
