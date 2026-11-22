@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { CalendarDays, Plus, Trash2 } from "lucide-react";
+import { CalendarDays, ClipboardCopy, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { formatWeeklySummary, type SummaryWorkout } from "@/lib/weekly-summary";
 
 import { AppShell } from "@/components/AppShell";
 import { AnatomyHeatMap } from "@/components/AnatomyMap";
@@ -93,6 +95,42 @@ function groupByWeek(list: ListWorkout[]) {
     map.get(k)!.workouts.push(w);
   }
   return [...map.values()].sort((a, b) => b.start.getTime() - a.start.getTime());
+}
+
+async function copyWeekSummary(start: Date, ids: string[]) {
+  if (ids.length === 0) {
+    toast("No workouts logged this week to copy.");
+    return;
+  }
+  try {
+    const { data, error } = await supabase
+      .from("workouts")
+      .select("date, title, workout_exercises(position, exercises(name), exercise_sets(set_number, reps, weight))")
+      .in("id", ids);
+    if (error) throw error;
+    type Row = {
+      date: string;
+      title: string;
+      workout_exercises: {
+        position: number;
+        exercises: { name: string } | null;
+        exercise_sets: { set_number: number; reps: number; weight: number }[];
+      }[];
+    };
+    const workouts: SummaryWorkout[] = ((data ?? []) as unknown as Row[]).map((w) => ({
+      date: w.date,
+      title: w.title,
+      exercises: w.workout_exercises.map((e) => ({
+        name: e.exercises?.name ?? "Exercise",
+        position: e.position,
+        sets: e.exercise_sets ?? [],
+      })),
+    }));
+    await navigator.clipboard.writeText(formatWeeklySummary(start, workouts));
+    toast.success("Weekly summary copied to clipboard!");
+  } catch {
+    toast.error("Couldn't copy the weekly summary. Please try again.");
+  }
 }
 
 function WorkoutsPage() {
@@ -208,13 +246,22 @@ function WorkoutsPage() {
           );
           return (
             <section key={week.start.getTime()} className="surface-soft rounded-2xl border border-border p-4">
-              <h2 className="mb-3 font-display text-lg font-semibold">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-display text-lg font-semibold">
                 Week of {weekLabel(week.start)}
                 <span className="ml-2 text-sm font-normal text-muted-foreground">
                   {week.workouts.length} workout{week.workouts.length === 1 ? "" : "s"} · {names.length} exercise
                   {names.length === 1 ? "" : "s"}
                 </span>
               </h2>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => copyWeekSummary(week.start, week.workouts.map((w) => w.id))}
+                >
+                  <ClipboardCopy className="size-4" /> Copy Weekly Summary for Coach
+                </Button>
+              </div>
               <div className="flex flex-col gap-4 md:flex-row md:items-start">
                 <ul className="min-w-0 flex-1 space-y-3">
                   {week.workouts.map((w) => (
