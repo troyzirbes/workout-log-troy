@@ -9,6 +9,7 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import {
   ArrowLeft,
   ArrowDown,
+  CheckCircle2,
   ArrowRight,
   ArrowUp,
   Pencil,
@@ -59,6 +60,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/workouts/$workoutId")({
   head: () => ({
@@ -270,6 +273,18 @@ function WorkoutDetail() {
       if (error) throw error;
     },
     onSuccess: invalidate,
+  });
+
+  const setEntryCompleted = useMutation({
+    mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
+      const { error } = await supabase
+        .from("workout_exercises")
+        .update({ completed })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+    onError: () => toast.error("Couldn't save exercise completion. Please try again."),
   });
 
   const saveOrder = useMutation({
@@ -542,12 +557,27 @@ function WorkoutDetail() {
               entry.weight_direction === "up"
                 ? "border-success bg-success-soft"
                 : "surface-soft border-border",
+              entry.completed && "ring-1 ring-success",
             )}
           >
             {(dragHandle) => <>
             <div className="flex items-center gap-2 border-b border-border px-3 py-1">
               {dragHandle}
               <span className="text-xs tabular-nums text-muted-foreground">{entry.position + 1}</span>
+              <div className="ml-auto flex items-center gap-2 pr-2">
+                <Checkbox
+                  id={`${entry.id}-completed`}
+                  checked={entry.completed}
+                  disabled={setEntryCompleted.isPending}
+                  onCheckedChange={(checked) =>
+                    setEntryCompleted.mutate({ id: entry.id, completed: checked === true })
+                  }
+                />
+                <Label htmlFor={`${entry.id}-completed`} className="cursor-pointer text-sm">
+                  Completed as planned
+                </Label>
+                {entry.completed && <CheckCircle2 className="size-4 text-success" aria-label="Completed" />}
+              </div>
             </div>
             <div className="grid gap-5 p-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="flex min-w-0 gap-3 sm:gap-4">

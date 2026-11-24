@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { CalendarDays, ClipboardCopy, Plus, Trash2 } from "lucide-react";
+import { CalendarDays, CalendarPlus, CheckCircle2, ClipboardCopy, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatWeeklySummary, type SummaryWorkout } from "@/lib/weekly-summary";
+import { isWorkoutComplete } from "@/lib/workout-completion";
+import { nextWeekDate } from "@/lib/workout-template";
 
 import { AppShell } from "@/components/AppShell";
 import { AnatomyHeatMap } from "@/components/AnatomyMap";
@@ -56,7 +58,10 @@ type ListWorkout = {
   id: string;
   title: string;
   date: string;
-  workout_exercises: { exercises: { name: string } | null }[];
+  workout_exercises: {
+    completed: boolean;
+    exercises: { name: string } | null;
+  }[];
 };
 
 const workoutListQuery = {
@@ -64,7 +69,7 @@ const workoutListQuery = {
   queryFn: async (): Promise<ListWorkout[]> => {
     const { data, error } = await supabase
       .from("workouts")
-      .select("id, title, date, workout_exercises(exercises(name))")
+      .select("id, title, date, workout_exercises(completed, exercises(name))")
       .order("date", { ascending: false });
     if (error) throw error;
     return (data ?? []) as unknown as ListWorkout[];
@@ -133,6 +138,79 @@ async function copyWeekSummary(start: Date, ids: string[]) {
   }
 }
 
+type TemplateWorkout = {
+  date: string;
+  title: string;
+  notes: string | null;
+  workout_exercises: {
+    exercise_id: string;
+    position: number;
+    weight_direction: "up" | "same" | "down";
+    exercise_sets: { set_number: number; reps: number; weight: number }[];
+  }[];
+};
+
+async function copyWeekToNextWeek(ids: string[]) {
+  if (ids.length === 0) throw new Error("No workouts to copy");
+  const { data, error } = await supabase
+    .from("workouts")
+    .select("date, title, notes, workout_exercises(exercise_id, position, weight_direction, exercise_sets(set_number, reps, weight))")
+    .in("id", ids)
+    .order("date", { ascending: true });
+  if (error) throw error;
+
+  const createdWorkoutIds: string[] = [];
+  try {
+    for (const source of (data ?? []) as unknown as TemplateWorkout[]) {
+      const { data: savedWorkout, error: workoutError } = await supabase
+        .from("workouts")
+        .insert({
+          date: nextWeekDate(source.date),
+          title: source.title,
+          notes: source.notes,
+        })
+        .select("id")
+        .single();
+      if (workoutError) throw workoutError;
+      createdWorkoutIds.push(savedWorkout.id);
+
+      const sourceEntries = [...source.workout_exercises].sort((a, b) => a.position - b.position);
+      for (const entry of sourceEntries) {
+        const { data: savedEntry, error: entryError } = await supabase
+          .from("workout_exercises")
+          .insert({
+            workout_id: savedWorkout.id,
+            exercise_id: entry.exercise_id,
+            position: entry.position,
+            weight_direction: entry.weight_direction,
+            success: false,
+            completed: false,
+          })
+          .select("id")
+          .single();
+        if (entryError) throw entryError;
+        if (entry.exercise_sets.length > 0) {
+          const { error: setsError } = await supabase.from("exercise_sets").insert(
+            entry.exercise_sets.map((set) => ({
+              workout_exercise_id: savedEntry.id,
+              set_number: set.set_number,
+              reps: set.reps,
+              weight: set.weight,
+            })),
+          );
+          if (setsError) throw setsError;
+        }
+      }
+    }
+    return createdWorkoutIds.length;
+  } catch (error) {
+    if (createdWorkoutIds.length > 0) {
+      await supabase.from("workouts").delete().in("id", createdWorkoutIds);
+    }
+    throw error;
+  }
+}
+
 function WorkoutsPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -167,6 +245,15 @@ function WorkoutsPage() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["workouts"] }),
+  });
+
+  const templateNextWeek = useMutation({
+    mutationFn: copyWeekToNextWeek,
+    onSuccess: (count) => {
+      qc.invalidateQueries({ queryKey: ["workouts"] });
+      toast.success(`${count} workout${count === 1 ? "" : "s"} copied to next week.`);
+    },
+    onError: () => toast.error("Couldn't copy the full week. Please try again."),
   });
 
   return (
@@ -254,13 +341,24 @@ function WorkoutsPage() {
                   {names.length === 1 ? "" : "s"}
                 </span>
               </h2>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => copyWeekSummary(week.start, week.workouts.map((w) => w.id))}
-                >
-                  <ClipboardCopy className="size-4" /> Copy Weekly Summary for Coach
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => copyWeekSummary(week.start, week.workouts.map((w) => w.id))}
+                  >
+                    <ClipboardCopy className="size-4" /> Copy Weekly Summary for Coach
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={templateNextWeek.isPending}
+                    onClick={() => templateNextWeek.mutate(week.workouts.map((w) => w.id))}
+                  >
+                    <CalendarPlus className="size-4" />
+                    {templateNextWeek.isPending ? "Copying…" : "Template next week"}
+                  </Button>
+                </div>
               </div>
               <div className="flex flex-col gap-4 md:flex-row md:items-start">
                 <ul className="min-w-0 flex-1 space-y-3">
@@ -273,7 +371,14 @@ function WorkoutsPage() {
                         <CalendarDays className="size-5" />
                       </span>
                       <Link to="/workouts/$workoutId" params={{ workoutId: w.id }} className="min-w-0 flex-1">
-                        <p className="truncate font-display text-base font-semibold">{w.title}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate font-display text-base font-semibold">{w.title}</p>
+                          {isWorkoutComplete(w.workout_exercises) && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">
+                              <CheckCircle2 className="size-3.5" /> Done
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{formatDate(w.date)}</p>
                       </Link>
                       <Button

@@ -66,6 +66,7 @@ export type WorkoutExercise = {
   exercise_id: string;
   position: number;
   success: boolean;
+  completed: boolean;
   weight_direction: WeightDirection;
   exercises: Exercise;
   exercise_sets: ExerciseSet[];
