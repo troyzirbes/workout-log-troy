@@ -265,6 +265,20 @@ function WorkoutsPage() {
             {workouts.length} session{workouts.length === 1 ? "" : "s"} logged
           </p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        {workouts.length > 0 && (
+          <Button
+            variant="outline"
+            disabled={templateNextWeek.isPending}
+            onClick={() => {
+              const latest = groupByWeek(workouts)[0];
+              if (latest) templateNextWeek.mutate(latest.workouts.map((w) => w.id));
+            }}
+          >
+            <CalendarPlus className="size-4" />
+            {templateNextWeek.isPending ? "Copying…" : "Template next week"}
+          </Button>
+        )}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -313,6 +327,7 @@ function WorkoutsPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
@@ -348,15 +363,6 @@ function WorkoutsPage() {
                     onClick={() => copyWeekSummary(week.start, week.workouts.map((w) => w.id))}
                   >
                     <ClipboardCopy className="size-4" /> Copy Weekly Summary for Coach
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={templateNextWeek.isPending}
-                    onClick={() => templateNextWeek.mutate(week.workouts.map((w) => w.id))}
-                  >
-                    <CalendarPlus className="size-4" />
-                    {templateNextWeek.isPending ? "Copying…" : "Template next week"}
                   </Button>
                 </div>
               </div>
